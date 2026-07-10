@@ -243,14 +243,54 @@ ya existían, no rediseñar el backend.
 - **NativeWind** (Tailwind para RN) con paleta y tokens propios inspirados en
   Apple/Linear/Bloomberg/TradingView, con modo claro/oscuro real
   (`tailwind.config.js` + `useColorScheme` de NativeWind).
-- **TanStack Query** para todo el estado de servidor (caché, refetch); **Zustand**
-  solo para sesión/tema.
+- **TanStack Query** para todo el estado de servidor (caché, refetch). Sin
+  Zustand ni store de sesión -- no hay login (ver sección 10).
 - **react-native-wagmi-charts** para el gráfico de precio interactivo (gesto de
   crosshair).
 - Componentes de diseño reutilizables en `apps/mobile/src/components`
   (`Card`, `ScoreBadge`, `SectionHeader`, `ComingSoon`, `PriceChart`...).
+- **Expo SDK 54** (no la última disponible en npm a propósito): la app de
+  **Expo Go** publicada en Play Store va detrás de la última SDK publicada,
+  y solo carga proyectos de la SDK que ella misma soporta -- comprueba la
+  versión que indica tu Expo Go (perfil -> "SDK Version") antes de subir de
+  SDK. Dos cosas rompieron probando en dispositivo real y quedan resueltas,
+  pero pueden reaparecer si se toca esto sin cuidado:
+  - `react-native-reanimated` v4 requiere `react-native-worklets` como
+    **peer dependency** explícita -- pnpm no la instala sola al ser peer, y
+    sin ella el babel plugin (`react-native-worklets/plugin`, que
+    `babel-preset-expo` intenta cargar automáticamente al detectar
+    Reanimated) falla, y en tiempo de ejecución revienta con
+    `Exception in HostFunction: TurboModule method "installTurboModule"...`.
+    Están fijadas versiones exactas (no rangos `^`/`~`) para
+    `react-native-reanimated` y `react-native-worklets` en
+    `apps/mobile/package.json` porque Expo Go trae compilado un binario
+    nativo concreto por SDK -- una versión JS más nueva que ese binario
+    (aunque semánticamente "compatible") puede desincronizar la firma de
+    los TurboModules y provocar el mismo crash.
+  - Tras cualquier cambio de SDK, ejecuta `npx expo install --fix` dentro de
+    `apps/mobile` para realinear todas las versiones a la vez, en vez de
+    tocar `package.json` a mano.
 
 ## 12. Roadmap (fase 2 y siguientes)
+
+### Pendiente urgente (siguiente sesión)
+
+- **Home tarda varios minutos en la primera carga real (bug de diseño, no de
+  key)**: `GET /home` llama a `ScoringService.getUniverseSnapshot()`, que
+  calcula el score de **las ~145 empresas del universo entero** solo para
+  poder mostrar el top 10 en pantalla. Con Finnhub real + `FinnhubThrottle`
+  (~1 petición/seg) y ~4 llamadas por empresa, eso son varios minutos en
+  frío -- el spinner del Home en el móvil se queda esperando ese tiempo. Se
+  probó en vivo el 2026-07-10/11: `curl /home` no responde en 30s (normal,
+  sigue calculando en el server). Verificado que el bundle/app arrancan bien
+  en Expo Go (Android, SDK 54) una vez resueltos los problemas de
+  compatibilidad -- este es el único bloqueante real que queda para probarlo
+  cómodamente en el móvil.
+  - Arreglo propuesto: calentar `scores:universe` en segundo plano al
+    arrancar el server (o con un cron periódico) en vez de calcularlo bajo
+    demanda en la primera petición; o hacer que `/home` solo pida scores de
+    un subconjunto pequeño (p. ej. últimos ya cacheados) y no bloquee en la
+    snapshot completa.
 
 1. **Calendario**: resultados/dividendos/splits reales desde el proveedor de
    datos + tabla de eventos curados manualmente.

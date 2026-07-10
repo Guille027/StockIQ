@@ -68,8 +68,17 @@ pnpm dev:mobile
 Esto abre el bundler de Expo con un código QR.
 
 - **En tu móvil Android**: abre la app **Expo Go**, escanea el QR (debes estar
-  en la misma red WiFi que el PC). También puedes conectar el móvil por USB y
-  usar `adb reverse tcp:8081 tcp:8081` si prefieres no depender del WiFi.
+  en la misma red WiFi que el PC -- si el QR no se ve bien, en Expo Go pulsa
+  "Entrar URL manualmente" y escribe `exp://<IP-de-tu-PC>:8081`). También
+  puedes conectar el móvil por USB y usar `adb reverse tcp:8081 tcp:8081` si
+  prefieres no depender del WiFi.
+- **Si Expo Go dice "incompatible SDK version"**: abre Expo Go -> perfil ->
+  "SDK Version" para ver qué SDK soporta tu Expo Go instalado, y asegúrate de
+  que coincide con el `"expo": "~X.0.0"` de `apps/mobile/package.json`
+  (actualmente SDK 54). Si no coincide, hay que alinear el proyecto a esa
+  SDK con `npx expo install --fix` dentro de `apps/mobile` -- ver la nota
+  sobre Reanimated/worklets en `docs/ARCHITECTURE.md` (sección 11) antes de
+  tocar versiones a mano.
 - **Importante**: la app móvil necesita saber dónde está tu backend. Por
   defecto usa `http://localhost:3000`, que **no funciona desde un móvil físico**
   (localhost ahí es el propio teléfono). Averigua la IP local de tu PC con
