@@ -190,6 +190,17 @@ exactamente el contrato de API y el modelo de datos ya definido en
   quedan `undefined` (mostrados como "n/d") en vez de inventarse a partir de
   un campo que no significa lo mismo. `cash` sí se deriva de un cálculo
   legítimo (caja por acción × acciones en circulación, ambos datos reales).
+  Además, el endpoint de velas históricas (`/stock/candle`) ya **no** está
+  disponible en el plan gratuito de Finnhub para ningún ticker (devuelve
+  403) -- por eso existe `TwelveDataPriceProvider`.
+- **`TwelveDataPriceProvider`** (`market-data/providers/twelvedata-price-provider.ts`):
+  proveedor independiente solo para el histórico de precios del gráfico,
+  vía [Twelve Data](https://twelvedata.com/pricing) (gratis, 800
+  peticiones/día, sin tarjeta). Se probó Stooq primero pero ahora exige un
+  desafío JavaScript anti-bot que lo hace inviable desde un backend. Si
+  `TWELVEDATA_API_KEY` no está configurada, `MarketDataService` cae al
+  histórico del proveedor principal (mock si no hay `FINNHUB_API_KEY`, o el
+  de Finnhub -- que a día de hoy siempre cae a mock por el punto anterior).
 
 ## 10. Autenticación
 

@@ -38,9 +38,13 @@ de ejemplo (mock), claramente etiquetados en la interfaz. Para datos e IA reales
 
 1. **Datos de mercado (gratis)**: crea una cuenta en https://finnhub.io/register
    y copia tu API key a `FINNHUB_API_KEY` en `.env`.
-2. **IA (Claude)**: consigue una key en https://console.anthropic.com/ y
+2. **Gráfico de precio (gratis)**: el plan gratuito de Finnhub ya no incluye
+   histórico de velas. Crea una cuenta gratis (sin tarjeta, ~10s) en
+   https://twelvedata.com/pricing y copia tu key a `TWELVEDATA_API_KEY` en
+   `.env` para que el gráfico deje de ser de ejemplo.
+3. **IA (Claude)**: consigue una key en https://console.anthropic.com/ y
    cópiala a `ANTHROPIC_API_KEY` en `.env`.
-3. **Base de datos** (solo necesaria para registro/login de usuarios): si
+4. **Base de datos** (solo necesaria para registro/login de usuarios): si
    tienes Docker, `pnpm db:up` levanta Postgres+Redis. Si no, usa un Postgres
    gratuito hospedado (p. ej. [Neon](https://neon.tech)) y pega la URL en
    `DATABASE_URL`.

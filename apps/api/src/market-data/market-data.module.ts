@@ -4,12 +4,14 @@ import { MarketDataService } from "./market-data.service";
 import { MARKET_DATA_PROVIDER } from "./providers/market-data-provider.interface";
 import { MockMarketDataProvider } from "./providers/mock-provider";
 import { FinnhubMarketDataProvider } from "./providers/finnhub-provider";
+import { TwelveDataPriceProvider } from "./providers/twelvedata-price-provider";
 
 @Module({
   providers: [
     MarketDataService,
     MockMarketDataProvider,
     FinnhubMarketDataProvider,
+    TwelveDataPriceProvider,
     {
       provide: MARKET_DATA_PROVIDER,
       useFactory: (config: ConfigService, finnhub: FinnhubMarketDataProvider, mock: MockMarketDataProvider) => {
