@@ -1,0 +1,24 @@
+{
+  "name": "stockiq",
+  "private": true,
+  "version": "0.1.0",
+  "description": "StockIQ - AI-powered large-cap stock analysis app (monorepo root)",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.11.0",
+  "scripts": {
+    "dev:api": "pnpm --filter @stockiq/api dev",
+    "dev:mobile": "pnpm --filter @stockiq/mobile start",
+    "dev": "concurrently -n api,mobile -c blue,magenta \"pnpm dev:api\" \"pnpm dev:mobile\"",
+    "build": "pnpm -r --filter=./packages/* build && pnpm --filter @stockiq/api build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.6.3"
+  }
+}

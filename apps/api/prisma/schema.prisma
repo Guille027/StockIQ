@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime         @default(now())
+  watchlists   Watchlist[]
+  portfolios   PaperPortfolio[]
+  alerts       Alert[]
+  backtestRuns BacktestRun[]
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  tickers   String[]
+  createdAt DateTime @default(now())
+}
+
+/// Phase 2 (paper trading) -- schema is ready, service layer is scaffolded only.
+model PaperPortfolio {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  name            String
+  cashBalance     Float
+  startingBalance Float
+  createdAt       DateTime     @default(now())
+  orders          PaperOrder[]
+}
+
+model PaperOrder {
+  id          String         @id @default(cuid())
+  portfolioId String
+  portfolio   PaperPortfolio @relation(fields: [portfolioId], references: [id])
+  ticker      String
+  side        String
+  quantity    Float
+  price       Float
+  executedAt  DateTime       @default(now())
+}
+
+/// Phase 2 (alerts) -- schema is ready, evaluation engine is scaffolded only.
+model Alert {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  ticker          String
+  conditionJson   Json
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  lastTriggeredAt DateTime?
+}
+
+/// Phase 2 (backtesting) -- schema is ready, backtest runner is scaffolded only.
+model BacktestRun {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  name       String
+  filterJson Json
+  resultJson Json
+  createdAt  DateTime @default(now())
+}
+
+/// Durable cache for AI reports, so they survive process restarts. Phase 1's
+/// AiModule uses an in-process cache first and best-effort persists here.
+model AiReportCache {
+  ticker      String   @id
+  reportJson  Json
+  generatedAt DateTime @default(now())
+}
