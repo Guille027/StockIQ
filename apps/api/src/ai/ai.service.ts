@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import type { AiReport, DailyMarketSummary, IndexQuote, ScoreChange } from "@stockiq/shared-types";
 import { getCompany, isInUniverse } from "@stockiq/universe";
 import { NotFoundException } from "@nestjs/common";
@@ -6,7 +6,7 @@ import { CacheService } from "../common/cache/cache.service";
 import { MarketDataService } from "../market-data/market-data.service";
 import { NewsService } from "../news/news.service";
 import { ScoringService } from "../scoring/scoring.service";
-import { AnthropicClient } from "./anthropic.client";
+import { AI_CLIENT, AiClient } from "./ai-client.interface";
 import { OrchestratorService } from "./orchestrator.service";
 
 const AI_REPORT_TTL_SECONDS = 12 * 60 * 60; // 12h
@@ -20,7 +20,7 @@ export class AiService {
     private readonly scoring: ScoringService,
     private readonly news: NewsService,
     private readonly orchestrator: OrchestratorService,
-    private readonly client: AnthropicClient,
+    @Inject(AI_CLIENT) private readonly client: AiClient,
   ) {}
 
   getCachedReport(ticker: string): AiReport | undefined {
@@ -93,7 +93,7 @@ export class AiService {
       date: new Date().toISOString().slice(0, 10),
       isMock: true,
       headline: "[MOCK] Resumen diario de ejemplo",
-      body: `[MOCK] El S&P 500 se sitúa en ${spx?.value ?? "n/d"} (${((spx?.changePct ?? 0) * 100).toFixed(2)}% simulado). Configura ANTHROPIC_API_KEY para un resumen real generado por IA.`,
+      body: `[MOCK] El S&P 500 se sitúa en ${spx?.value ?? "n/d"} (${((spx?.changePct ?? 0) * 100).toFixed(2)}% simulado). Configura GEMINI_API_KEY para un resumen real generado por IA.`,
     };
   }
 }

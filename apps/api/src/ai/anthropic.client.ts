@@ -1,28 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Anthropic from "@anthropic-ai/sdk";
-
-export class NoApiKeyError extends Error {
-  constructor() {
-    super("ANTHROPIC_API_KEY no configurada");
-  }
-}
-
-interface StructuredCallParams {
-  system: string;
-  user: string;
-  toolName: string;
-  toolDescription: string;
-  schema: Record<string, unknown>;
-}
+import { AiClient, NoApiKeyError, StructuredCallParams } from "./ai-client.interface";
 
 /**
  * Thin wrapper around @anthropic-ai/sdk that forces structured JSON output
- * via a single forced tool call, so every agent gets a typed, parseable
- * result instead of having to scrape free-form text.
+ * via a single forced tool call. Paid (no free tier) -- Gemini is the
+ * default AI engine (see gemini.client.ts); this is kept as an opt-in
+ * alternative behind the same AiClient interface for anyone who'd rather
+ * pay for Claude's quality. Wire it in via ai.module.ts's AI_CLIENT factory.
  */
 @Injectable()
-export class AnthropicClient {
+export class AnthropicClient implements AiClient {
   private readonly logger = new Logger(AnthropicClient.name);
   private readonly client: Anthropic | null;
   private readonly model: string;
@@ -38,7 +27,7 @@ export class AnthropicClient {
   }
 
   async callStructured<T>(params: StructuredCallParams): Promise<T> {
-    if (!this.client) throw new NoApiKeyError();
+    if (!this.client) throw new NoApiKeyError("ANTHROPIC_API_KEY");
 
     const message = await this.client.messages.create({
       model: this.model,

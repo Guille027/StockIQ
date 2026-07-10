@@ -1,8 +1,9 @@
 # StockIQ
 
-App de análisis de acciones con IA para inversores particulares. Analiza
-~130 grandes empresas cotizadas (S&P 100, Nasdaq-100, Dow Jones y grandes
-compañías europeas) -- nunca ETFs, cripto, forex, opciones ni penny stocks.
+App de análisis de acciones con IA, pensada para un único usuario (sin login).
+Analiza ~130 grandes empresas cotizadas (S&P 100, Nasdaq-100, Dow Jones y
+grandes compañías europeas) -- nunca ETFs, cripto, forex, opciones ni penny
+stocks.
 
 Ver [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) para el diseño completo.
 
@@ -24,7 +25,9 @@ packages/
 - pnpm (`npm install -g pnpm`)
 - Un móvil Android con la app **Expo Go** instalada (Play Store), en la misma
   red WiFi que tu PC -- o el emulador de Android Studio
-- Opcional: Docker Desktop (solo si quieres Postgres/Redis en local)
+
+No hace falta Docker ni base de datos: la app está pensada para un único
+usuario, sin login ni registro -- todo funciona sin cuenta.
 
 ## Puesta en marcha
 
@@ -42,12 +45,10 @@ de ejemplo (mock), claramente etiquetados en la interfaz. Para datos e IA reales
    histórico de velas. Crea una cuenta gratis (sin tarjeta, ~10s) en
    https://twelvedata.com/pricing y copia tu key a `TWELVEDATA_API_KEY` en
    `.env` para que el gráfico deje de ser de ejemplo.
-3. **IA (Claude)**: consigue una key en https://console.anthropic.com/ y
-   cópiala a `ANTHROPIC_API_KEY` en `.env`.
-4. **Base de datos** (solo necesaria para registro/login de usuarios): si
-   tienes Docker, `pnpm db:up` levanta Postgres+Redis. Si no, usa un Postgres
-   gratuito hospedado (p. ej. [Neon](https://neon.tech)) y pega la URL en
-   `DATABASE_URL`.
+3. **IA (gratis)**: crea una key gratuita (sin tarjeta) en
+   [Google AI Studio](https://ai.google.dev) -> "Get API key", y cópiala a
+   `GEMINI_API_KEY` en `.env`. (Claude/Anthropic también funciona como
+   alternativa de pago vía `ANTHROPIC_API_KEY`, si algún día lo prefieres.)
 
 ### Arrancar el backend
 

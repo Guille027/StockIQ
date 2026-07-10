@@ -8,10 +8,8 @@ import { StatusBar } from "expo-status-bar";
 import { useColorScheme as useNativewindColorScheme } from "nativewind";
 import { useColorScheme as useSystemColorScheme } from "react-native";
 import { queryClient } from "@/api/queryClient";
-import { useAuthStore } from "@/auth/store";
 
 export default function RootLayout() {
-  const hydrated = useAuthStore((s) => s.hydrated);
   const { setColorScheme } = useNativewindColorScheme();
   const systemScheme = useSystemColorScheme();
   const [ready, setReady] = useState(false);
@@ -21,7 +19,7 @@ export default function RootLayout() {
     setReady(true);
   }, [systemScheme]);
 
-  if (!hydrated || !ready) return null;
+  if (!ready) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -29,7 +27,6 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen
               name="company/[ticker]"

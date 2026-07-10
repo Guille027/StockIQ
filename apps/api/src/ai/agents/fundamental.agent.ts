@@ -1,5 +1,5 @@
 import type { AgentOutput, Company, Fundamentals } from "@stockiq/shared-types";
-import { AnthropicClient } from "../anthropic.client";
+import type { AiClient } from "../ai-client.interface";
 
 const AGENT_OUTPUT_SCHEMA = {
   properties: {
@@ -18,7 +18,7 @@ export interface FundamentalAgentInput {
 
 /** Reasons purely over valuation, profitability, growth and balance-sheet
  * data. Never touches news or price momentum. */
-export async function runFundamentalAgent(client: AnthropicClient, input: FundamentalAgentInput): Promise<AgentOutput> {
+export async function runFundamentalAgent(client: AiClient, input: FundamentalAgentInput): Promise<AgentOutput> {
   const { company, fundamentals } = input;
   const result = await client.callStructured<Omit<AgentOutput, "agent">>({
     system:

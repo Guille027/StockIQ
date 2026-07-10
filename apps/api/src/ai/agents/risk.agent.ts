@@ -1,5 +1,5 @@
 import type { AgentOutput, Company, CompanyScores, Fundamentals } from "@stockiq/shared-types";
-import { AnthropicClient } from "../anthropic.client";
+import type { AiClient } from "../ai-client.interface";
 
 const AGENT_OUTPUT_SCHEMA = {
   properties: {
@@ -19,7 +19,7 @@ export interface RiskAgentInput {
 
 /** Reasons over leverage, volatility (beta), and the risk/financial-health
  * score breakdowns already computed by the deterministic scoring engine. */
-export async function runRiskAgent(client: AnthropicClient, input: RiskAgentInput): Promise<AgentOutput> {
+export async function runRiskAgent(client: AiClient, input: RiskAgentInput): Promise<AgentOutput> {
   const { company, fundamentals, scores } = input;
   const riskBreakdown = scores.breakdowns.find((b) => b.category === "risk");
   const healthBreakdown = scores.breakdowns.find((b) => b.category === "financialHealth");

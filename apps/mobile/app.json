@@ -24,7 +24,7 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "plugins": ["expo-router"],
     "extra": {
       "apiBaseUrl": "http://localhost:3000"
     }

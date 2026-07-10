@@ -1,6 +1,6 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { AgentOutput, AiReport, Company, CompanyScores, Fundamentals, NewsItem } from "@stockiq/shared-types";
-import { AnthropicClient, NoApiKeyError } from "./anthropic.client";
+import { AI_CLIENT, AiClient, NoApiKeyError } from "./ai-client.interface";
 import { runFundamentalAgent } from "./agents/fundamental.agent";
 import { runNewsAgent } from "./agents/news.agent";
 import { runRiskAgent } from "./agents/risk.agent";
@@ -39,7 +39,7 @@ export interface OrchestratorInput {
 export class OrchestratorService {
   private readonly logger = new Logger(OrchestratorService.name);
 
-  constructor(private readonly client: AnthropicClient) {}
+  constructor(@Inject(AI_CLIENT) private readonly client: AiClient) {}
 
   async generateReport(input: OrchestratorInput): Promise<AiReport> {
     if (!this.client.isConfigured) {
@@ -90,9 +90,9 @@ export class OrchestratorService {
     }
   }
 
-  /** Deterministic, data-grounded placeholder report used whenever no
-   * ANTHROPIC_API_KEY is configured. Clearly labeled isMock: true -- never
-   * presented to the user as a real AI-generated analysis. */
+  /** Deterministic, data-grounded placeholder report used whenever no AI
+   * client is configured (GEMINI_API_KEY / ANTHROPIC_API_KEY). Clearly
+   * labeled isMock: true -- never presented as a real AI-generated analysis. */
   private buildMockReport(input: OrchestratorInput): AiReport {
     const { company, fundamentals, scores, news } = input;
     const agentOutputs: AgentOutput[] = [
@@ -126,7 +126,7 @@ export class OrchestratorService {
       ticker: company.ticker,
       generatedAt: new Date().toISOString(),
       isMock: true,
-      businessSummary: `[MOCK] ${company.name} opera en el sector ${company.sector} (${company.industry}). Este resumen usa datos de ejemplo -- añade ANTHROPIC_API_KEY y FINNHUB_API_KEY para un informe real.`,
+      businessSummary: `[MOCK] ${company.name} opera en el sector ${company.sector} (${company.industry}). Este resumen usa datos de ejemplo -- añade GEMINI_API_KEY y FINNHUB_API_KEY para un informe real.`,
       howItMakesMoney: `[MOCK] Información real sobre el modelo de negocio de ${company.name} requiere datos reales; esta es una plantilla de ejemplo.`,
       financialSituation: `[MOCK] Con datos simulados, ${company.name} presenta un margen operativo del ${((fundamentals.operatingMargin ?? 0) * 100).toFixed(1)}% y deuda neta/EBITDA de ${fundamentals.netDebtToEbitda}.`,
       valuation: `[MOCK] PER simulado de ${fundamentals.peRatio} frente a un PEG simulado de ${fundamentals.pegRatio}.`,

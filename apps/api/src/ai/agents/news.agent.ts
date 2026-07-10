@@ -1,5 +1,5 @@
 import type { AgentOutput, Company, NewsItem } from "@stockiq/shared-types";
-import { AnthropicClient } from "../anthropic.client";
+import type { AiClient } from "../ai-client.interface";
 
 const AGENT_OUTPUT_SCHEMA = {
   properties: {
@@ -18,7 +18,7 @@ export interface NewsAgentInput {
 
 /** Reasons purely over recent news headlines/summaries -- never fabricates
  * a headline that wasn't provided. */
-export async function runNewsAgent(client: AnthropicClient, input: NewsAgentInput): Promise<AgentOutput> {
+export async function runNewsAgent(client: AiClient, input: NewsAgentInput): Promise<AgentOutput> {
   const { company, news } = input;
   if (news.length === 0) {
     return {

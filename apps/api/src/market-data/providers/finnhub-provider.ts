@@ -155,9 +155,9 @@ export class FinnhubMarketDataProvider implements MarketDataProvider {
   }
 
   async getIndices(): Promise<IndexQuote[]> {
-    // Finnhub's free tier does not reliably expose major index quotes;
-    // indices are shown from the mock provider until a paid data source
-    // (or a dedicated index API) is wired in.
+    // Finnhub's free tier does not reliably expose major index quotes.
+    // MarketDataService tries YahooIndicesProvider first and only falls
+    // back to this (the mock provider) if that fails too.
     return this.fallback.getIndices();
   }
 }

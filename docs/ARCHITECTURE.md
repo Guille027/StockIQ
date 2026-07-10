@@ -55,7 +55,7 @@ Mobile (app/company/[ticker].tsx)
        ScoringService (caché) -> scoring-engine.computeAllScores()
        NewsService (caché) -> sentimiento + dedup
   -> POST /companies/:ticker/ai-report (bajo demanda, no automático)
-       AiService -> OrchestratorService -> Agentes especializados -> Claude
+       AiService -> OrchestratorService -> Agentes especializados -> Gemini
 ```
 
 Todo pasa por `CacheService` (TTL en memoria en fase 1, ver sección 9) para no
@@ -93,9 +93,20 @@ mediana del sector en vez de un rango fijo).
 
 ## 5. Motor de IA multiagente (`apps/api/src/ai`)
 
+El motor de IA está detrás de una interfaz propia, `AiClient`
+(`ai-client.interface.ts`) -- mismo patrón de "provider abstraction" que
+`MarketDataProvider`. **Google Gemini es el motor por defecto**
+(`gemini.client.ts`, plan gratuito real de [ai.google.dev](https://ai.google.dev),
+sin tarjeta), usando su función de salida JSON estructurada nativa
+(`responseSchema` + `responseMimeType: application/json`) en vez del truco de
+tool-use que usan otros modelos. `anthropic.client.ts` (Claude, de pago)
+queda como alternativa opcional detrás de la misma interfaz -- se activa
+automáticamente si defines `ANTHROPIC_API_KEY` y dejas `GEMINI_API_KEY`
+vacía (ver `ai.module.ts`).
+
 En vez de un único prompt gigante, el informe de cada empresa se construye con
 agentes especializados que solo ven la porción de datos relevante y devuelven una
-salida JSON estructurada (forzada vía tool-use de Claude, nunca texto libre):
+salida JSON estructurada:
 
 - **Agente Fundamental** (`agents/fundamental.agent.ts`) -- solo fundamentales.
 - **Agente de Noticias** (`agents/news.agent.ts`) -- solo titulares/resúmenes reales.
@@ -105,17 +116,18 @@ salida JSON estructurada (forzada vía tool-use de Claude, nunca texto libre):
   para implementarse en fase 2 con la misma interfaz `Agent<Input, Output>`.
 
 Un **orquestador** (`orchestrator.service.ts`) ejecuta los tres agentes reales en
-paralelo y hace una llamada final a Claude que combina sus salidas en un informe
-único y coherente (`AiReport`): resumen de negocio, cómo gana dinero, situación
-financiera, valoración, fortalezas, debilidades, riesgos, catalizadores,
-resumen de noticias, resultados pasados y expectativas del mercado -- más un
-`aiConfidenceScore`.
+paralelo y hace una llamada final al `AiClient` configurado que combina sus
+salidas en un informe único y coherente (`AiReport`): resumen de negocio, cómo
+gana dinero, situación financiera, valoración, fortalezas, debilidades,
+riesgos, catalizadores, resumen de noticias, resultados pasados y expectativas
+del mercado -- más un `aiConfidenceScore`.
 
-**Sin `ANTHROPIC_API_KEY` configurada**, el orquestador genera un informe de
-ejemplo, construido a partir de los datos reales/mock disponibles y **siempre
-etiquetado `isMock: true`**, tanto en el JSON como visualmente en la app (nunca se
-presenta como análisis real). Los informes se cachean 12h para controlar coste y
-latencia; el usuario puede forzar regeneración.
+**Sin `GEMINI_API_KEY` ni `ANTHROPIC_API_KEY` configuradas**, el orquestador
+genera un informe de ejemplo, construido a partir de los datos reales/mock
+disponibles y **siempre etiquetado `isMock: true`**, tanto en el JSON como
+visualmente en la app (nunca se presenta como análisis real). Los informes se
+cachean 12h para controlar coste y latencia; el usuario puede forzar
+regeneración.
 
 ## 6. Scanner (`apps/api/src/scanner`)
 
@@ -155,7 +167,7 @@ depende del módulo de calendario (fase 2).
 | Paper Trading | 🚧 scaffold -- esquema Prisma listo, `501` |
 | Alertas | 🚧 scaffold -- esquema Prisma listo, `501` |
 | Chat IA | 🚧 pantalla "Próximamente" en la app |
-| Auth | ✅ funcional (JWT, requiere Postgres) |
+| Auth | ⏸️ backend implementado pero **sin usar** -- la app está pensada para un único usuario, sin login (ver sección 10) |
 
 Los módulos 🚧 tienen su controlador, carpeta y comentario `TODO` en el código
 (`apps/api/src/{calendar,backtesting,paper-trading,alerts}`) explicando
@@ -201,12 +213,28 @@ exactamente el contrato de API y el modelo de datos ya definido en
   `TWELVEDATA_API_KEY` no está configurada, `MarketDataService` cae al
   histórico del proveedor principal (mock si no hay `FINNHUB_API_KEY`, o el
   de Finnhub -- que a día de hoy siempre cae a mock por el punto anterior).
+- **`YahooIndicesProvider`** (`market-data/providers/yahoo-indices-provider.ts`):
+  cotización de los índices principales (S&P 500, Nasdaq 100, Dow Jones,
+  Euro Stoxx 50) vía el endpoint de gráficos no oficial de Yahoo Finance --
+  sin API key, sin cuenta, sin coste (el mismo endpoint detrás de la
+  librería `yfinance`). No necesita ninguna variable de entorno: se intenta
+  siempre primero, y solo si falla (endpoint no documentado, podría cambiar
+  o bloquearse sin aviso) `MarketDataService` cae a los índices mock del
+  proveedor principal.
 
 ## 10. Autenticación
 
-JWT propio (`@nestjs/jwt` + `passport-jwt`), contraseñas con bcrypt. Sin vendor
-lock-in; migrar a OAuth (Google/Apple) en fase 2 es añadir una `Strategy` más,
-no rehacer el módulo.
+**Deshabilitada en la app móvil a propósito**: StockIQ está pensada para un
+único usuario (tú), así que no tiene sentido pedir login. `app/index.tsx`
+redirige directo a `(tabs)` sin pasar por ninguna pantalla de acceso, y
+ninguna pantalla llama a `/auth/*`.
+
+El backend conserva el módulo `auth` (JWT propio vía `@nestjs/jwt` +
+`passport-jwt`, contraseñas con bcrypt) por si en el futuro hace falta
+sincronizar entre varios dispositivos o compartir la app -- no se elimina
+porque no molesta (no bloquea el arranque ni requiere Postgres para nada que
+la app use hoy) y activarlo sería añadir de nuevo las pantallas de login que
+ya existían, no rediseñar el backend.
 
 ## 11. Diseño de la app móvil
 

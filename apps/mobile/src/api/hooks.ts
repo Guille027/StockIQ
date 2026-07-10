@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
-import { useAuthStore } from "@/auth/store";
 import type {
   AiReport,
-  AuthResponse,
   CompanyListResponse,
   CompanyProfileResponse,
   HomeResponse,
@@ -78,23 +76,5 @@ export function useScanner(filter: ScannerFilter, enabled: boolean) {
         body: JSON.stringify(filter),
       }),
     enabled,
-  });
-}
-
-export function useLogin() {
-  const setSession = useAuthStore((s) => s.setSession);
-  return useMutation({
-    mutationFn: (dto: { email: string; password: string }) =>
-      apiFetch<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(dto) }),
-    onSuccess: (data) => setSession(data.accessToken, data.user),
-  });
-}
-
-export function useRegister() {
-  const setSession = useAuthStore((s) => s.setSession);
-  return useMutation({
-    mutationFn: (dto: { email: string; password: string; name?: string }) =>
-      apiFetch<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(dto) }),
-    onSuccess: (data) => setSession(data.accessToken, data.user),
   });
 }

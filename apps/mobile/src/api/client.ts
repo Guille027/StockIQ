@@ -1,5 +1,4 @@
 import Constants from "expo-constants";
-import { useAuthStore } from "@/auth/store";
 
 /**
  * Resolves the StockIQ API base URL. On a physical device, "localhost"
@@ -27,12 +26,10 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = useAuthStore.getState().accessToken;
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init?.headers,
     },
   });

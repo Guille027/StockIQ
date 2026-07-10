@@ -1,8 +1,6 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { useAuthStore } from "@/auth/store";
 import { Card } from "@/components/Card";
 import { cn } from "@/utils/cn";
 
@@ -19,20 +17,12 @@ const UPCOMING = [
 ];
 
 export default function SettingsScreen() {
-  const user = useAuthStore((s) => s.user);
-  const clearSession = useAuthStore((s) => s.clearSession);
   const { colorScheme, setColorScheme } = useColorScheme();
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={["top"]}>
       <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
         <Text className="text-2xl font-bold text-ink dark:text-inkDark mt-2 mb-4">Ajustes</Text>
-
-        <Card className="mb-4">
-          <Text className="text-muted dark:text-mutedDark text-xs">Cuenta</Text>
-          <Text className="text-ink dark:text-inkDark font-medium mt-1">{user?.name || user?.email}</Text>
-          <Text className="text-muted dark:text-mutedDark text-xs mt-0.5">{user?.email}</Text>
-        </Card>
 
         <Text className="text-ink dark:text-inkDark font-semibold mb-2">Apariencia</Text>
         <Card className="flex-row gap-2 mb-4">
@@ -57,16 +47,6 @@ export default function SettingsScreen() {
             </Card>
           ))}
         </View>
-
-        <Pressable
-          onPress={() => {
-            clearSession();
-            router.replace("/(auth)/login");
-          }}
-          className="border border-negative dark:border-negativeDark rounded-xl py-3 items-center"
-        >
-          <Text className="text-negative dark:text-negativeDark font-semibold">Cerrar sesión</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
