@@ -176,6 +176,20 @@ exactamente el contrato de API y el modelo de datos ya definido en
   automáticamente si no hay `FINNHUB_API_KEY`, incluso campo a campo (si Finnhub
   falla o no cubre un dato en el plan gratuito, se rellena con mock en vez de
   romper la pantalla).
+- **`FinnhubThrottle`** (`common/finnhub`): cola compartida que serializa
+  *todas* las llamadas a Finnhub -- de `market-data` y de `news` por igual,
+  porque comparten el mismo límite de 60 req/min por API key -- a ~1
+  petición/segundo. Sin esto, una pantalla que dispara muchas peticiones a la
+  vez (p. ej. `GET /companies` recorriendo las ~145 empresas) recibe `429` y
+  cae a datos mock aunque la key sea válida. Con la cola, tarda más (la
+  primera carga fría del universo completo puede llevar varios minutos) pero
+  siempre devuelve datos reales cuando hay key -- y todo queda cacheado 6h.
+- **Límites reales del plan gratuito de Finnhub**: `stock/metric` no expone
+  Free Cash Flow, deuda total ni caja en cifra absoluta (solo ratios o
+  valores por acción) -- `freeCashFlow`, `totalDebt` y `netDebtToEbitda`
+  quedan `undefined` (mostrados como "n/d") en vez de inventarse a partir de
+  un campo que no significa lo mismo. `cash` sí se deriva de un cálculo
+  legítimo (caja por acción × acciones en circulación, ambos datos reales).
 
 ## 10. Autenticación
 

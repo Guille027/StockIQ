@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { EarningsHistoryPoint, Fundamentals, IndexQuote, PriceBar, PriceRange } from "@stockiq/shared-types";
+import { FinnhubThrottle } from "../../common/finnhub/finnhub-throttle.service";
 import type { MarketDataProvider } from "./market-data-provider.interface";
 import { MockMarketDataProvider } from "./mock-provider";
 
@@ -8,9 +9,13 @@ const BASE_URL = "https://finnhub.io/api/v1";
 
 /**
  * Finnhub free-tier backed provider (https://finnhub.io, 60 req/min free).
- * Falls back to the mock provider per-call if a Finnhub request fails or a
- * field isn't available on the free tier, so a flaky/rate-limited response
- * degrades gracefully instead of breaking the screen.
+ * Every outgoing request goes through the shared `FinnhubThrottle` queue
+ * (also used by NewsService, since both share the same per-key rate limit)
+ * so the whole app never exceeds the free-tier limit no matter how many
+ * tickers get requested concurrently. Falls back to the mock provider
+ * per-call if a Finnhub request still fails or a field isn't available on
+ * the free tier, so a flaky response degrades gracefully instead of
+ * breaking the screen.
  */
 @Injectable()
 export class FinnhubMarketDataProvider implements MarketDataProvider {
@@ -20,17 +25,22 @@ export class FinnhubMarketDataProvider implements MarketDataProvider {
   private readonly apiKey: string;
   private readonly fallback = new MockMarketDataProvider();
 
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly throttle: FinnhubThrottle,
+  ) {
     this.apiKey = config.get<string>("FINNHUB_API_KEY") ?? "";
   }
 
-  private async get<T>(path: string, params: Record<string, string>): Promise<T> {
-    const qs = new URLSearchParams({ ...params, token: this.apiKey }).toString();
-    const res = await fetch(`${BASE_URL}${path}?${qs}`);
-    if (!res.ok) {
-      throw new Error(`Finnhub ${path} respondió ${res.status}`);
-    }
-    return (await res.json()) as T;
+  private get<T>(path: string, params: Record<string, string>): Promise<T> {
+    return this.throttle.schedule(async () => {
+      const qs = new URLSearchParams({ ...params, token: this.apiKey }).toString();
+      const res = await fetch(`${BASE_URL}${path}?${qs}`);
+      if (!res.ok) {
+        throw new Error(`Finnhub ${path} respondió ${res.status}`);
+      }
+      return (await res.json()) as T;
+    });
   }
 
   async getFundamentals(ticker: string): Promise<Fundamentals> {
@@ -46,17 +56,26 @@ export class FinnhubMarketDataProvider implements MarketDataProvider {
         throw new Error("Finnhub no devolvió un precio válido");
       }
 
+      const sharesOutstanding = (profile.shareOutstanding ?? 0) * 1_000_000;
+      // Finnhub's free-tier `stock/metric` endpoint only exposes per-share
+      // cash, not an absolute figure -- deriving it from a real per-share
+      // value times real shares outstanding is a legitimate calculation,
+      // not invented data. Free cash flow and total debt have no reliable
+      // absolute-figure field on the free tier, so they're left undefined
+      // (shown as "n/d") rather than guessed from an unrelated metric.
+      const cash = m.cashPerSharePerShareQuarterly !== undefined ? m.cashPerSharePerShareQuarterly * sharesOutstanding : undefined;
+
       return {
         ticker,
         asOf: new Date().toISOString().slice(0, 10),
         price: quote.c,
         marketCap: (profile.marketCapitalization ?? 0) * 1_000_000,
-        sharesOutstanding: (profile.shareOutstanding ?? 0) * 1_000_000,
+        sharesOutstanding,
         peRatio: m.peBasicExclExtraTTM,
-        pegRatio: m.pegRatio ?? m.peInclExtraTTM,
+        pegRatio: m.pegTTM ?? m.forwardPEG,
         priceToSales: m.psTTM,
         priceToBook: m.pbAnnual,
-        evToEbitda: m["currentEv/freeCashFlowTTM"],
+        evToEbitda: m.evEbitdaTTM,
         roe: pct(m.roeTTM),
         roic: pct(m.roiTTM),
         grossMargin: pct(m.grossMarginTTM),
@@ -67,10 +86,10 @@ export class FinnhubMarketDataProvider implements MarketDataProvider {
         epsGrowthYoY: pct(m.epsGrowthTTMYoy),
         revenueGrowth3yCagr: pct(m.revenueGrowth3Y),
         epsGrowth3yCagr: pct(m.epsGrowth3Y),
-        freeCashFlow: m.freeCashFlowTTM ? m.freeCashFlowTTM * 1_000_000 : undefined,
-        totalDebt: m.totalDebt ? m.totalDebt * 1_000_000 : undefined,
-        cash: m.cashAndEquivalents ? m.cashAndEquivalents * 1_000_000 : undefined,
-        netDebtToEbitda: m.netDebtToTotalEquity,
+        freeCashFlow: undefined, // not available as an absolute figure on Finnhub's free tier
+        totalDebt: undefined, // not available as an absolute figure on Finnhub's free tier
+        cash,
+        netDebtToEbitda: undefined, // not available on Finnhub's free tier
         currentRatio: m.currentRatioAnnual,
         dividendYield: pct(m.dividendYieldIndicatedAnnual),
         payoutRatio: pct(m.payoutRatioTTM),

@@ -9,10 +9,6 @@ import { NewsService } from "../news/news.service";
 const SCORE_TTL_SECONDS = 6 * 60 * 60; // 6h
 const UNIVERSE_SNAPSHOT_TTL_SECONDS = 6 * 60 * 60; // 6h
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 @Injectable()
 export class ScoringService {
   private readonly logger = new Logger(ScoringService.name);
@@ -32,9 +28,12 @@ export class ScoringService {
 
   /**
    * Scores for the entire investable universe, used by the scanner and the
-   * Home screen leaderboard. Cached for hours since walking all ~135
-   * tickers against a rate-limited free API is expensive; on a cold cache
-   * with live Finnhub data this can take a couple of minutes the first time.
+   * Home screen leaderboard. Cached for hours since walking all ~145
+   * tickers against a rate-limited free API is expensive: each ticker needs
+   * 3 Finnhub calls for fundamentals + 1 for news, all serialized through
+   * `FinnhubThrottle` at ~1 req/sec -- on a cold cache with a live Finnhub
+   * key this can take several minutes the first time. Individual company
+   * lookups (`getScores`) stay fast (~4s) since they only need one ticker.
    */
   async getUniverseSnapshot(): Promise<CompanyScores[]> {
     return this.cache.wrap("scores:universe", UNIVERSE_SNAPSHOT_TTL_SECONDS, async () => {
@@ -44,9 +43,6 @@ export class ScoringService {
           results.push(await this.getScores(company.ticker));
         } catch (err) {
           this.logger.warn(`No se pudo puntuar ${company.ticker}: ${(err as Error).message}`);
-        }
-        if (!this.marketData.isMock) {
-          await sleep(250);
         }
       }
       return results;

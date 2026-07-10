@@ -1,7 +1,9 @@
+import { join } from "node:path";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { PrismaModule } from "./common/prisma/prisma.module";
 import { CacheModule } from "./common/cache/cache.module";
+import { FinnhubThrottleModule } from "./common/finnhub/finnhub-throttle.module";
 import { AuthModule } from "./auth/auth.module";
 import { MarketDataModule } from "./market-data/market-data.module";
 import { ScoringModule } from "./scoring/scoring.module";
@@ -18,9 +20,13 @@ import { AppController } from "./app.controller";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // apps/api has no .env of its own -- the monorepo root's .env (see
+    // README.md) is the single source of truth. __dirname is apps/api/src in
+    // dev and apps/api/dist in the built app, both three levels below root.
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: join(__dirname, "../../../.env") }),
     PrismaModule,
     CacheModule,
+    FinnhubThrottleModule,
     AuthModule,
     MarketDataModule,
     NewsModule,
