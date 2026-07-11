@@ -321,6 +321,25 @@ móviles: `app/(tabs)/watchlist.tsx` (lista de carteras) y
 historial). Verificado en vivo end-to-end, incluida persistencia tras
 reiniciar el servidor.
 
+**Mejoras tras feedback del usuario** (mismo día): el formulario de
+compra/venta pedía el ticker de memoria, poco realista si no te sabes las
+siglas de las ~145 empresas. Se añadió:
+- `GET /companies/search?q=` (`companies.controller.ts`, declarado antes de
+  `:ticker` para que la ruta no lo capture como parámetro): busca sobre la
+  lista estática del universo, sin llamar a `MarketDataService` -- instantáneo
+  incluso en frío. Ranking: ticker exacto > ticker empieza por la búsqueda >
+  alguna palabra del nombre empieza por la búsqueda > coincidencia parcial.
+  Escribir "L" ya muestra Eli Lilly (LLY) entre los primeros resultados.
+- El formulario móvil ahora es un autocompletado: al escribir aparecen
+  sugerencias (ticker + nombre) para tocar y seleccionar, en vez de un campo
+  de texto libre.
+- `PlaceOrderDto`/`PaperTradingService.placeOrder` aceptan `quantity` **o**
+  `amount` (importe en dólares, nunca ambos a la vez -- validado con un 400
+  si no es así). Un importe se resuelve a una cantidad de acciones
+  (posiblemente fraccionaria, redondeada a 6 decimales) al precio actual:
+  "quiero comprar $2500 de Apple" ya no requiere calcular a mano cuántas
+  acciones son.
+
 1. **Calendario**: resultados/dividendos/splits reales desde el proveedor de
    datos + tabla de eventos curados manualmente.
 2. **Backtesting**: motor que recalcula `scoring-engine` sobre fundamentales

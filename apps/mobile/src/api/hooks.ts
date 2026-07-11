@@ -10,6 +10,7 @@ import type {
   PortfolioStats,
   ScannerFilter,
   ScannerResponse,
+  TickerSearchResponse,
 } from "./types";
 
 export function useHome() {
@@ -85,6 +86,15 @@ export function useScanner(filter: ScannerFilter, enabled: boolean) {
   });
 }
 
+export function useTickerSearch(query: string) {
+  return useQuery({
+    queryKey: ["ticker-search", query],
+    queryFn: () => apiFetch<TickerSearchResponse>(`/companies/search?q=${encodeURIComponent(query)}`),
+    enabled: query.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function usePortfolios() {
   return useQuery({
     queryKey: ["portfolios"],
@@ -123,7 +133,7 @@ export function useCreatePortfolio() {
 export function usePlaceOrder(portfolioId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dto: { ticker: string; side: "buy" | "sell"; quantity: number }) =>
+    mutationFn: (dto: { ticker: string; side: "buy" | "sell"; quantity?: number; amount?: number }) =>
       apiFetch<PortfolioStats>(`/paper-trading/portfolios/${portfolioId}/orders`, { method: "POST", body: JSON.stringify(dto) }),
     onSuccess: (stats) => {
       queryClient.setQueryData(["portfolio", portfolioId], stats);

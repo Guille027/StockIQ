@@ -59,14 +59,26 @@ export class PaperTradingService {
     return orders.map((o) => this.toPaperOrder(o));
   }
 
-  async placeOrder(id: string, tickerParam: string, side: "buy" | "sell", quantity: number): Promise<PortfolioStats> {
+  async placeOrder(
+    id: string,
+    tickerParam: string,
+    side: "buy" | "sell",
+    amounts: { quantity?: number; amount?: number },
+  ): Promise<PortfolioStats> {
     const ticker = tickerParam.toUpperCase();
     if (!isInUniverse(ticker)) {
       throw new BadRequestException(`${ticker} no pertenece al universo de inversión de StockIQ.`);
     }
+    if ((amounts.quantity === undefined) === (amounts.amount === undefined)) {
+      throw new BadRequestException("Especifica o bien una cantidad de acciones, o bien un importe en dólares (no ambos).");
+    }
 
     const portfolio = await this.findOrThrow(id);
     const { price } = await this.marketData.getFundamentals(ticker);
+    // Resolve a dollar amount to a (possibly fractional) share quantity at
+    // the current price -- rounded to 6 decimals, same precision most
+    // fractional-share brokers use, to avoid floating-point noise.
+    const quantity = amounts.quantity ?? Math.round((amounts.amount! / price) * 1e6) / 1e6;
 
     if (side === "buy") {
       const cost = price * quantity;

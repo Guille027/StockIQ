@@ -73,3 +73,13 @@ export interface NewsResponse {
   isMock: boolean;
   items: NewsItem[];
 }
+
+export interface TickerSearchResult {
+  ticker: string;
+  name: string;
+  sector: string;
+}
+
+export interface TickerSearchResponse {
+  results: TickerSearchResult[];
+}

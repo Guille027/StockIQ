@@ -41,6 +41,35 @@ export class CompaniesController {
     return { isMock: this.marketData.isMock, sectors: getSectors(), count: rows.length, companies: rows };
   }
 
+  /** Lightweight ticker/name search for autocomplete pickers (e.g. the Paper
+   * Trading buy/sell form) -- filters the static universe list directly,
+   * no market-data calls, so it stays instant even on a cold cache. Must
+   * be declared before `:ticker` or Nest would try to match "search" as a
+   * ticker param. */
+  @Get("search")
+  search(@Query("q") q?: string, @Query("limit") limit?: string) {
+    const query = (q ?? "").trim().toLowerCase();
+    const max = Math.min(Number(limit) || 15, 50);
+    if (!query) {
+      return { results: UNIVERSE.slice(0, max).map(({ ticker, name, sector }) => ({ ticker, name, sector })) };
+    }
+
+    const scored = UNIVERSE.map((c) => {
+      const ticker = c.ticker.toLowerCase();
+      const name = c.name.toLowerCase();
+      let score = 4;
+      if (ticker === query) score = 0;
+      else if (ticker.startsWith(query)) score = 1;
+      else if (name.split(/\s+/).some((word) => word.startsWith(query))) score = 2;
+      else if (ticker.includes(query) || name.includes(query)) score = 3;
+      return { c, score };
+    }).filter((r) => r.score < 4);
+
+    scored.sort((a, b) => a.score - b.score || a.c.ticker.localeCompare(b.c.ticker));
+
+    return { results: scored.slice(0, max).map(({ c }) => ({ ticker: c.ticker, name: c.name, sector: c.sector })) };
+  }
+
   @Get(":ticker")
   async getProfile(@Param("ticker") tickerParam: string) {
     const ticker = tickerParam.toUpperCase();

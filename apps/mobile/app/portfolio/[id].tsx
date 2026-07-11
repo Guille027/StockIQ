@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { usePortfolio, usePortfolioOrders, usePlaceOrder, useResetPortfolio, useDeletePortfolio } from "@/api/hooks";
+import { usePortfolio, usePortfolioOrders, usePlaceOrder, useResetPortfolio, useDeletePortfolio, useTickerSearch } from "@/api/hooks";
 import { ApiError } from "@/api/client";
 import { Card } from "@/components/Card";
 import { LoadingState } from "@/components/LoadingState";
@@ -27,29 +27,46 @@ export default function PortfolioDetailScreen() {
   const deletePortfolio = useDeletePortfolio();
 
   const [ticker, setTicker] = useState("");
+  const [tickerSelected, setTickerSelected] = useState(false);
   const [side, setSide] = useState<"buy" | "sell">("buy");
-  const [quantity, setQuantity] = useState("");
+  const [inputMode, setInputMode] = useState<"shares" | "amount">("shares");
+  const [amountValue, setAmountValue] = useState("");
   const [orderError, setOrderError] = useState<string | null>(null);
+
+  const { data: searchResults } = useTickerSearch(tickerSelected ? "" : ticker);
+  const showSuggestions = !tickerSelected && ticker.length > 0 && (searchResults?.results.length ?? 0) > 0;
+
+  const selectTicker = (t: string) => {
+    setTicker(t);
+    setTickerSelected(true);
+  };
 
   const submitOrder = () => {
     setOrderError(null);
-    const qty = Number(quantity);
-    if (!ticker.trim() || !qty || qty <= 0) {
-      setOrderError("Introduce un ticker y una cantidad válida.");
+    if (!ticker.trim()) {
+      setOrderError("Elige una empresa del listado.");
       return;
     }
-    placeOrder.mutate(
-      { ticker: ticker.trim().toUpperCase(), side, quantity: qty },
-      {
-        onSuccess: () => {
-          setTicker("");
-          setQuantity("");
-        },
-        onError: (err) => {
-          setOrderError(err instanceof ApiError ? err.message : "No se pudo ejecutar la orden.");
-        },
+    const value = Number(amountValue);
+    if (!value || value <= 0) {
+      setOrderError(inputMode === "shares" ? "Introduce una cantidad de acciones válida." : "Introduce un importe en dólares válido.");
+      return;
+    }
+    const dto = {
+      ticker: ticker.trim().toUpperCase(),
+      side,
+      ...(inputMode === "shares" ? { quantity: value } : { amount: value }),
+    };
+    placeOrder.mutate(dto, {
+      onSuccess: () => {
+        setTicker("");
+        setTickerSelected(false);
+        setAmountValue("");
       },
-    );
+      onError: (err) => {
+        setOrderError(err instanceof ApiError ? err.message : "No se pudo ejecutar la orden.");
+      },
+    });
   };
 
   const confirmReset = () => {
@@ -78,7 +95,7 @@ export default function PortfolioDetailScreen() {
       {isError ? <ErrorState message="No se pudo cargar la cartera." onRetry={() => refetch()} /> : null}
 
       {portfolio ? (
-        <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+        <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
           <Card className="mt-2">
             <Text className="text-muted dark:text-mutedDark text-xs">Valor total</Text>
             <Text className="text-ink dark:text-inkDark text-3xl font-bold mt-1">{fmtMoney(portfolio.totalValue)}</Text>
@@ -111,18 +128,47 @@ export default function PortfolioDetailScreen() {
                 </View>
               </Pressable>
             </View>
+
+            <Text className="text-ink dark:text-inkDark text-sm font-medium mb-1">Empresa</Text>
             <TextInput
               value={ticker}
-              onChangeText={(t) => setTicker(t.toUpperCase())}
-              placeholder="Ticker, ej. AAPL"
+              onChangeText={(t) => {
+                setTicker(t.toUpperCase());
+                setTickerSelected(false);
+              }}
+              placeholder="Escribe el nombre o el ticker, ej. Lilly o L"
               placeholderTextColor="#8B93A7"
               autoCapitalize="characters"
-              className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark mb-3"
+              className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
             />
+            {showSuggestions ? (
+              <View className="border border-border dark:border-borderDark rounded-xl mt-1 overflow-hidden" style={{ maxHeight: 220 }}>
+                <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+                  {searchResults!.results.map((r) => (
+                    <Pressable key={r.ticker} onPress={() => selectTicker(r.ticker)}>
+                      <View className="px-3 py-2.5 border-b border-border dark:border-borderDark">
+                        <Text className="text-ink dark:text-inkDark font-medium">
+                          {r.ticker} <Text className="text-muted dark:text-mutedDark font-normal">· {r.name}</Text>
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : null}
+
+            <View className="flex-row items-center justify-between mt-3 mb-1">
+              <Text className="text-ink dark:text-inkDark text-sm font-medium">{inputMode === "shares" ? "Cantidad de acciones" : "Importe en dólares"}</Text>
+              <Pressable onPress={() => setInputMode((m) => (m === "shares" ? "amount" : "shares"))}>
+                <Text className="text-primary dark:text-primaryDark text-xs font-medium">
+                  {inputMode === "shares" ? "Comprar por importe ($) en vez de acciones" : "Comprar por número de acciones en vez de importe"}
+                </Text>
+              </Pressable>
+            </View>
             <TextInput
-              value={quantity}
-              onChangeText={setQuantity}
-              placeholder="Cantidad de acciones"
+              value={amountValue}
+              onChangeText={setAmountValue}
+              placeholder={inputMode === "shares" ? "ej. 10 acciones" : "ej. 2500 (compra $2500 en acciones)"}
               placeholderTextColor="#8B93A7"
               keyboardType="numeric"
               className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark mb-3"
