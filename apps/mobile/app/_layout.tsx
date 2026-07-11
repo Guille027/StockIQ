@@ -32,6 +32,10 @@ export default function RootLayout() {
               name="company/[ticker]"
               options={{ headerShown: true, headerTitle: "", headerBackTitle: "Atrás" }}
             />
+            <Stack.Screen
+              name="portfolio/[id]"
+              options={{ headerShown: true, headerTitle: "", headerBackTitle: "Atrás" }}
+            />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>

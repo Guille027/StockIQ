@@ -14,8 +14,7 @@
     "build": "pnpm -r --filter=./packages/* build && pnpm --filter @stockiq/api build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down"
+    "db:push": "pnpm --filter @stockiq/api prisma:push"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

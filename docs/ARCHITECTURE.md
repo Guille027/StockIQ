@@ -164,7 +164,7 @@ depende del módulo de calendario (fase 2).
 | Noticias | ✅ funcional (dedup + sentimiento heurístico) |
 | Calendario | 🚧 scaffold -- esquema y contrato definidos, `501` |
 | Backtesting | 🚧 scaffold -- esquema y contrato definidos, `501` |
-| Paper Trading | 🚧 scaffold -- esquema Prisma listo, `501` |
+| Paper Trading | ✅ funcional (fase 2, ver sección 13) -- comprar/vender, varias carteras, resetear |
 | Alertas | 🚧 scaffold -- esquema Prisma listo, `501` |
 | Chat IA | 🚧 pantalla "Próximamente" en la app |
 | Auth | ⏸️ backend implementado pero **sin usar** -- la app está pensada para un único usuario, sin login (ver sección 10) |
@@ -176,10 +176,14 @@ exactamente el contrato de API y el modelo de datos ya definido en
 
 ## 9. Infraestructura y resiliencia
 
-- **Sin bloquear el arranque por infraestructura ausente**: `PrismaService` no
-  conecta activamente al iniciar -- Postgres solo hace falta para las rutas que
-  de verdad lo usan (auth, futuras watchlists/paper-trading/alertas). El resto de
-  la app (empresas, scores, scanner, IA, noticias) funciona sin base de datos.
+- **Base de datos = SQLite, un archivo local** (`apps/api/prisma/dev.db`,
+  creado con `pnpm db:push`). Sin Docker, sin Postgres, sin cuenta en la
+  nube -- se cambió de Postgres a SQLite precisamente porque la app es de
+  un solo usuario (sección 10) y no había motivo real para pedir
+  infraestructura externa. `PrismaService` no conecta activamente al
+  iniciar -- las rutas que no tocan base de datos (empresas, scores,
+  scanner, IA, noticias) funcionan igual aunque el archivo `.db` no exista
+  todavía; solo paper trading (y auth, si se reactivase) la necesitan.
 - **Caché en memoria** (`CacheService`) con la misma interfaz que tendría una
   implementación Redis -- cambiar a Redis en producción es sustituir un archivo,
   no rediseñar los servicios que lo consumen.
@@ -232,9 +236,10 @@ ninguna pantalla llama a `/auth/*`.
 El backend conserva el módulo `auth` (JWT propio vía `@nestjs/jwt` +
 `passport-jwt`, contraseñas con bcrypt) por si en el futuro hace falta
 sincronizar entre varios dispositivos o compartir la app -- no se elimina
-porque no molesta (no bloquea el arranque ni requiere Postgres para nada que
-la app use hoy) y activarlo sería añadir de nuevo las pantallas de login que
-ya existían, no rediseñar el backend.
+porque no molesta (no bloquea el arranque) y activarlo sería añadir de nuevo
+las pantallas de login que ya existían, no rediseñar el backend. `User` ya
+no tiene relación con `PaperPortfolio` en el esquema -- las carteras de
+paper trading no pertenecen a nadie en particular, son "las tuyas".
 
 ## 11. Diseño de la app móvil
 
@@ -300,25 +305,40 @@ no respondía ni en 30s), con `topAiScoresReady: false` y `topAiScores: []`;
 sigue respondiendo rápido (~0.3s) mientras el cálculo de fondo continúa, sin
 duplicar llamadas a Finnhub.
 
+### Implementado (2026-07-11): Paper Trading
+
+Primer módulo de fase 2 (`apps/api/src/paper-trading`). Varias carteras,
+comprar/vender (validado contra el universo permitido y contra caja/posición
+disponible), historial de órdenes, resetear y eliminar. Órdenes ejecutan al
+precio actual de `MarketDataService` (real o mock, lo que use el resto de la
+app). Las posiciones se derivan del historial de órdenes (método de coste
+medio) en vez de guardarse por duplicado, para tener una única fuente de
+verdad. Esto fue lo que motivó el cambio de Postgres a SQLite (sección 9):
+paper trading necesita persistencia real (sobrevivir a reinicios), y pedir
+Docker/Neon solo para esto no encajaba con una app de un usuario. Pantallas
+móviles: `app/(tabs)/watchlist.tsx` (lista de carteras) y
+`app/portfolio/[id].tsx` (detalle, formulario de compra/venta, posiciones,
+historial). Verificado en vivo end-to-end, incluida persistencia tras
+reiniciar el servidor.
+
 1. **Calendario**: resultados/dividendos/splits reales desde el proveedor de
    datos + tabla de eventos curados manualmente.
 2. **Backtesting**: motor que recalcula `scoring-engine` sobre fundamentales
    históricos, con métricas (CAGR, Sharpe, Sortino, drawdown, win rate, profit
    factor) y avisos de sobreajuste (pocas operaciones, universo demasiado
    concentrado, rango de fechas demasiado corto).
-3. **Paper Trading**: órdenes simuladas contra `PaperPortfolio`/`PaperOrder`
-   (esquema ya en `schema.prisma`), ejecutadas a precio de mercado del
-   `MarketDataService`.
-4. **Alertas**: evaluación periódica (cron/BullMQ) de `Alert.conditionJson`
+3. **Alertas**: evaluación periódica (cron/BullMQ) de `Alert.conditionJson`
    contra scores/precios frescos + notificaciones push (Expo Notifications).
-5. **Chat IA**: nuevo agente conversacional que reutiliza el mismo patrón de
+4. **Chat IA**: nuevo agente conversacional que reutiliza el mismo patrón de
    agentes (`Agent<Input, Output>`) pero con memoria de conversación y acceso a
    herramientas para consultar `market-data`/`scoring`/`news` bajo demanda.
-6. **Agentes Técnico, de Resultados y Macro**: sustituir los stubs por
+5. **Agentes Técnico, de Resultados y Macro**: sustituir los stubs por
    implementaciones reales siguiendo el patrón de `fundamental.agent.ts`.
-7. **Redis + BullMQ**: sustituir el `CacheService` en memoria por Redis y añadir
+6. **Redis + BullMQ**: sustituir el `CacheService` en memoria por Redis y añadir
    un job nocturno que precalcule scores/fundamentales de todo el universo, en
    vez de calentar la caché bajo demanda.
-8. **Scores comparados contra medianas sectoriales** en vez de rangos fijos.
-9. **Despliegue**: Postgres/Redis gestionados (Neon/Supabase + Upstash), API en
-   un contenedor (Railway/Fly.io/Render), build de Android con EAS.
+7. **Scores comparados contra medianas sectoriales** en vez de rangos fijos.
+8. **Despliegue**: API en un contenedor con volumen persistente para el
+   archivo SQLite (Railway/Fly.io/Render), build de Android con EAS. Si
+   algún día hace falta multi-dispositivo de verdad, ahí sí tendría sentido
+   volver a Postgres gestionado (Neon/Supabase) y reactivar auth.

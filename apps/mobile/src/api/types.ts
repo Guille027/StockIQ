@@ -7,13 +7,15 @@ import type {
   Fundamentals,
   IndexQuote,
   NewsItem,
+  PaperOrder,
+  PortfolioStats,
   PriceBar,
   ScannerFilter,
   ScannerResultRow,
   ScoreChange,
 } from "@stockiq/shared-types";
 
-export type { ScannerFilter, ScannerResultRow, CompanyScores, Fundamentals, Company, NewsItem, AiReport, PriceBar };
+export type { ScannerFilter, ScannerResultRow, CompanyScores, Fundamentals, Company, NewsItem, AiReport, PriceBar, PortfolioStats, PaperOrder };
 
 export interface CompanyListRow {
   ticker: string;

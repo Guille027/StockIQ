@@ -2,8 +2,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// SQLite: a single local file, no server/Docker/cloud account needed. This
+// app is single-user by design (see docs/ARCHITECTURE.md section 10), so
+// there was never a real reason to require Postgres just to boot.
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -14,7 +17,6 @@ model User {
   name         String?
   createdAt    DateTime         @default(now())
   watchlists   Watchlist[]
-  portfolios   PaperPortfolio[]
   alerts       Alert[]
   backtestRuns BacktestRun[]
 }
@@ -24,15 +26,14 @@ model Watchlist {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   name      String
-  tickers   String[]
+  tickers   String // JSON-encoded string[] -- SQLite (this Prisma version) supports neither array nor Json columns
   createdAt DateTime @default(now())
 }
 
-/// Phase 2 (paper trading) -- schema is ready, service layer is scaffolded only.
+/// No userId: the app is single-user, so a portfolio doesn't belong to
+/// anyone in particular -- it's just "one of your paper portfolios".
 model PaperPortfolio {
   id              String       @id @default(cuid())
-  userId          String
-  user            User         @relation(fields: [userId], references: [id])
   name            String
   cashBalance     Float
   startingBalance Float
@@ -57,7 +58,7 @@ model Alert {
   userId          String
   user            User      @relation(fields: [userId], references: [id])
   ticker          String
-  conditionJson   Json
+  conditionJson   String // JSON-encoded AlertCondition
   active          Boolean   @default(true)
   createdAt       DateTime  @default(now())
   lastTriggeredAt DateTime?
@@ -69,8 +70,8 @@ model BacktestRun {
   userId     String
   user       User     @relation(fields: [userId], references: [id])
   name       String
-  filterJson Json
-  resultJson Json
+  filterJson String // JSON-encoded ScannerFilter
+  resultJson String // JSON-encoded BacktestResult
   createdAt  DateTime @default(now())
 }
 
@@ -78,6 +79,6 @@ model BacktestRun {
 /// AiModule uses an in-process cache first and best-effort persists here.
 model AiReportCache {
   ticker      String   @id
-  reportJson  Json
+  reportJson  String // JSON-encoded AiReport
   generatedAt DateTime @default(now())
 }

@@ -1,18 +1,46 @@
-import { Controller, Get, NotImplementedException } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { PaperTradingService } from "./paper-trading.service";
+import { CreatePortfolioDto } from "./dto/create-portfolio.dto";
+import { PlaceOrderDto } from "./dto/place-order.dto";
 
-/**
- * TODO (phase 2): CRUD over `PaperPortfolio`/`PaperOrder` (Prisma models
- * already defined) with buy/sell endpoints that price fills using
- * MarketDataService, plus a stats endpoint computing PortfolioStats (see
- * packages/shared-types/src/portfolio.ts). No real money ever involved.
- * Contract: GET/POST /paper-trading/portfolios, POST /paper-trading/orders.
- */
 @ApiTags("paper-trading")
-@Controller("paper-trading")
+@Controller("paper-trading/portfolios")
 export class PaperTradingController {
-  @Get("portfolios")
-  notImplemented(): never {
-    throw new NotImplementedException("Paper trading todavía no implementado -- ver roadmap en docs/ARCHITECTURE.md.");
+  constructor(private readonly paperTrading: PaperTradingService) {}
+
+  @Get()
+  list() {
+    return this.paperTrading.listPortfolios();
+  }
+
+  @Post()
+  create(@Body() dto: CreatePortfolioDto) {
+    return this.paperTrading.createPortfolio(dto.name, dto.startingBalance);
+  }
+
+  @Get(":id")
+  get(@Param("id") id: string) {
+    return this.paperTrading.getPortfolio(id);
+  }
+
+  @Get(":id/orders")
+  orders(@Param("id") id: string) {
+    return this.paperTrading.listOrders(id);
+  }
+
+  @Post(":id/orders")
+  placeOrder(@Param("id") id: string, @Body() dto: PlaceOrderDto) {
+    return this.paperTrading.placeOrder(id, dto.ticker, dto.side, dto.quantity);
+  }
+
+  @Post(":id/reset")
+  reset(@Param("id") id: string) {
+    return this.paperTrading.resetPortfolio(id);
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    return this.paperTrading.deletePortfolio(id);
   }
 }

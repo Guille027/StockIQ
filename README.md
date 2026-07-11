@@ -26,8 +26,10 @@ packages/
 - Un móvil Android con la app **Expo Go** instalada (Play Store), en la misma
   red WiFi que tu PC -- o el emulador de Android Studio
 
-No hace falta Docker ni base de datos: la app está pensada para un único
-usuario, sin login ni registro -- todo funciona sin cuenta.
+No hace falta Docker ni cuenta de base de datos: la app está pensada para un
+único usuario, sin login ni registro. Paper Trading sí guarda datos (para que
+sobrevivan a reinicios del servidor), pero en un archivo SQLite local -- ver
+"Puesta en marcha" abajo.
 
 ## Puesta en marcha
 
@@ -49,6 +51,17 @@ de ejemplo (mock), claramente etiquetados en la interfaz. Para datos e IA reales
    [Google AI Studio](https://ai.google.dev) -> "Get API key", y cópiala a
    `GEMINI_API_KEY` en `.env`. (Claude/Anthropic también funciona como
    alternativa de pago vía `ANTHROPIC_API_KEY`, si algún día lo prefieres.)
+
+**Para usar Paper Trading** (comprar/vender con dinero ficticio), crea la
+base de datos local una vez:
+
+```bash
+pnpm db:push
+```
+
+Esto crea `apps/api/prisma/dev.db` (SQLite, un archivo, nada que instalar).
+Sin este paso, el resto de la app funciona igual -- solo Paper Trading lo
+necesita.
 
 ### Arrancar el backend
 
@@ -101,14 +114,15 @@ Esto abre el bundler de Expo con un código QR.
 | `pnpm dev:api` / `pnpm dev:mobile` | Solo uno de los dos |
 | `pnpm test` | Tests de todos los paquetes (scoring-engine, etc.) |
 | `pnpm build` | Compila packages + backend |
-| `pnpm db:up` / `pnpm db:down` | Postgres + Redis locales (requiere Docker) |
+| `pnpm db:push` | Crea/actualiza el archivo SQLite local (necesario para Paper Trading) |
 
 ## Qué está implementado
 
 Home, perfil de empresa completo (fundamentales, gráfico, scores explicables,
-informe IA, competidores), scanner con filtros, y noticias con deduplicación y
-sentimiento -- todo funcional de extremo a extremo. Backtesting, paper trading,
-alertas, calendario y chat IA están **scaffolded** (esquema de datos y
-contrato de API ya definidos, pantalla "Próximamente" en la app) para
-implementarse en la siguiente fase sin rehacer nada. Detalle completo en
+informe IA, competidores), scanner con filtros, noticias con deduplicación y
+sentimiento, y **Paper Trading** (varias carteras, comprar/vender, resetear)
+-- todo funcional de extremo a extremo. Backtesting, alertas, calendario y
+chat IA están **scaffolded** (esquema de datos y contrato de API ya
+definidos, pantalla "Próximamente" en la app) para implementarse en la
+siguiente fase sin rehacer nada. Detalle completo en
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#8-estado-de-cada-subsistema-pedido).

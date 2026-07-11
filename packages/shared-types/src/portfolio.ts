@@ -1,6 +1,6 @@
+// No userId -- StockIQ is single-user, a portfolio just belongs to "you".
 export interface PaperPortfolio {
   id: string;
-  userId: string;
   name: string;
   cashBalance: number;
   startingBalance: number;
@@ -24,10 +24,10 @@ export interface PaperOrder {
   executedAt: string;
 }
 
-export interface PortfolioStats {
-  portfolioId: string;
+export interface PortfolioStats extends PaperPortfolio {
   totalValue: number;
   totalReturnPct: number;
+  /** Not tracked yet (needs historical portfolio-value snapshots) -- always 0 for now. */
   dayChangePct: number;
   positions: (PaperPosition & { currentPrice: number; marketValue: number; unrealizedPnlPct: number })[];
 }

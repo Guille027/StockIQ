@@ -6,6 +6,8 @@ import type {
   CompanyProfileResponse,
   HomeResponse,
   NewsResponse,
+  PaperOrder,
+  PortfolioStats,
   ScannerFilter,
   ScannerResponse,
 } from "./types";
@@ -80,5 +82,73 @@ export function useScanner(filter: ScannerFilter, enabled: boolean) {
         body: JSON.stringify(filter),
       }),
     enabled,
+  });
+}
+
+export function usePortfolios() {
+  return useQuery({
+    queryKey: ["portfolios"],
+    queryFn: () => apiFetch<PortfolioStats[]>("/paper-trading/portfolios"),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function usePortfolio(id: string) {
+  return useQuery({
+    queryKey: ["portfolio", id],
+    queryFn: () => apiFetch<PortfolioStats>(`/paper-trading/portfolios/${id}`),
+    enabled: !!id,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function usePortfolioOrders(id: string) {
+  return useQuery({
+    queryKey: ["portfolio-orders", id],
+    queryFn: () => apiFetch<PaperOrder[]>(`/paper-trading/portfolios/${id}/orders`),
+    enabled: !!id,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useCreatePortfolio() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: { name: string; startingBalance: number }) =>
+      apiFetch<PortfolioStats>("/paper-trading/portfolios", { method: "POST", body: JSON.stringify(dto) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["portfolios"] }),
+  });
+}
+
+export function usePlaceOrder(portfolioId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: { ticker: string; side: "buy" | "sell"; quantity: number }) =>
+      apiFetch<PortfolioStats>(`/paper-trading/portfolios/${portfolioId}/orders`, { method: "POST", body: JSON.stringify(dto) }),
+    onSuccess: (stats) => {
+      queryClient.setQueryData(["portfolio", portfolioId], stats);
+      queryClient.invalidateQueries({ queryKey: ["portfolio-orders", portfolioId] });
+      queryClient.invalidateQueries({ queryKey: ["portfolios"] });
+    },
+  });
+}
+
+export function useResetPortfolio(portfolioId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiFetch<PortfolioStats>(`/paper-trading/portfolios/${portfolioId}/reset`, { method: "POST" }),
+    onSuccess: (stats) => {
+      queryClient.setQueryData(["portfolio", portfolioId], stats);
+      queryClient.invalidateQueries({ queryKey: ["portfolio-orders", portfolioId] });
+      queryClient.invalidateQueries({ queryKey: ["portfolios"] });
+    },
+  });
+}
+
+export function useDeletePortfolio() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (portfolioId: string) => apiFetch<void>(`/paper-trading/portfolios/${portfolioId}`, { method: "DELETE" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["portfolios"] }),
   });
 }
