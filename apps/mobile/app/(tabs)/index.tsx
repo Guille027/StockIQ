@@ -56,19 +56,28 @@ export default function HomeScreen() {
 
           <SectionHeader title="Mejor puntuación IA" action={{ label: "Ver scanner", onPress: () => router.push("/(tabs)/scanner") }} />
           <View className="gap-2">
-            {data.topAiScores.map((item) => (
-              <Pressable key={item.ticker} onPress={() => router.push(`/company/${item.ticker}`)}>
-                <Card className="flex-row items-center justify-between">
-                  <View className="flex-1 pr-3">
-                    <Text className="text-ink dark:text-inkDark font-semibold">{item.ticker}</Text>
-                    <Text className="text-muted dark:text-mutedDark text-xs" numberOfLines={1}>
-                      {item.name} · {item.sector}
-                    </Text>
-                  </View>
-                  <ScoreBadge value={item.globalScore} size="sm" />
-                </Card>
-              </Pressable>
-            ))}
+            {!data.topAiScoresReady ? (
+              <Card>
+                <Text className="text-ink dark:text-inkDark font-medium">Calculando puntuaciones...</Text>
+                <Text className="text-muted dark:text-mutedDark text-xs mt-1">
+                  Estamos analizando las ~145 empresas del universo por primera vez -- puede tardar unos minutos. Esta pantalla se actualizará sola.
+                </Text>
+              </Card>
+            ) : (
+              data.topAiScores.map((item) => (
+                <Pressable key={item.ticker} onPress={() => router.push(`/company/${item.ticker}`)}>
+                  <Card className="flex-row items-center justify-between">
+                    <View className="flex-1 pr-3">
+                      <Text className="text-ink dark:text-inkDark font-semibold">{item.ticker}</Text>
+                      <Text className="text-muted dark:text-mutedDark text-xs" numberOfLines={1}>
+                        {item.name} · {item.sector}
+                      </Text>
+                    </View>
+                    <ScoreBadge value={item.globalScore} size="sm" />
+                  </Card>
+                </Pressable>
+              ))
+            )}
           </View>
 
           <SectionHeader title="Noticias destacadas" />

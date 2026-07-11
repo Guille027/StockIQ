@@ -15,6 +15,10 @@ export function useHome() {
     queryKey: ["home"],
     queryFn: () => apiFetch<HomeResponse>("/home"),
     staleTime: 5 * 60 * 1000,
+    // Keep polling every 15s while the universe score snapshot is still
+    // warming up server-side, so the "Mejor puntuación IA" list fills in on
+    // its own without the user having to pull-to-refresh.
+    refetchInterval: (query) => (query.state.data?.topAiScoresReady ? false : 15_000),
   });
 }
 

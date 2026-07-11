@@ -15,29 +15,37 @@ export class HomeService {
   ) {}
 
   async getHome() {
-    const [indices, snapshot, topNews, dailySummary, scoreChanges] = await Promise.all([
+    const [indices, topNews, dailySummary, scoreChanges] = await Promise.all([
       this.marketData.getIndices(),
-      this.scoring.getUniverseSnapshot(),
       this.news.getMarketNews(8),
       this.ai.getDailySummary(),
       this.ai.getBiggestScoreChanges(),
     ]);
 
-    const topAiScores = [...snapshot]
-      .sort((a, b) => b.globalScore - a.globalScore)
-      .slice(0, 10)
-      .map((s) => ({
-        ticker: s.ticker,
-        name: getCompany(s.ticker)?.name ?? s.ticker,
-        sector: getCompany(s.ticker)?.sector ?? "",
-        globalScore: s.globalScore,
-      }));
+    // Never blocks: if the universe-wide scores aren't warm yet, this kicks
+    // off (or joins) the background computation and returns undefined right
+    // away, so Home stays responsive instead of hanging for minutes on a
+    // cold cache. See ScoringService.onModuleInit for the boot-time warm-up.
+    const snapshot = this.scoring.getUniverseSnapshotIfReady();
+    const topAiScoresReady = snapshot !== undefined;
+    const topAiScores = topAiScoresReady
+      ? [...snapshot]
+          .sort((a, b) => b.globalScore - a.globalScore)
+          .slice(0, 10)
+          .map((s) => ({
+            ticker: s.ticker,
+            name: getCompany(s.ticker)?.name ?? s.ticker,
+            sector: getCompany(s.ticker)?.sector ?? "",
+            globalScore: s.globalScore,
+          }))
+      : [];
 
     return {
       isMock: this.marketData.isMock,
       marketStatus: this.getMarketStatus(),
       indices,
       topAiScores,
+      topAiScoresReady,
       // Populated once the calendar module (phase 2) is implemented.
       upcomingEarnings: [] as unknown[],
       topNews,

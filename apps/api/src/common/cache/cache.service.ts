@@ -15,6 +15,7 @@ interface CacheEntry<T> {
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);
   private readonly store = new Map<string, CacheEntry<unknown>>();
+  private readonly inFlight = new Map<string, Promise<unknown>>();
 
   get<T>(key: string): T | undefined {
     const entry = this.store.get(key);
@@ -30,12 +31,48 @@ export class CacheService {
     this.store.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
   }
 
+  /** Single-flight: concurrent calls for the same key while it's still
+   * computing share the same in-progress promise instead of each kicking
+   * off their own (expensive/rate-limited) computation. */
   async wrap<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
     const cached = this.get<T>(key);
     if (cached !== undefined) return cached;
-    const value = await fn();
-    this.set(key, value, ttlSeconds);
-    return value;
+
+    const existing = this.inFlight.get(key);
+    if (existing) return existing as Promise<T>;
+
+    const promise = this.run(key, ttlSeconds, fn);
+    this.inFlight.set(key, promise);
+    return promise;
+  }
+
+  /**
+   * Non-blocking read: returns the cached value if present, otherwise
+   * kicks off `fn` in the background (deduped with any other in-flight
+   * call for the same key) and returns `undefined` immediately instead of
+   * waiting. Use this for screens that must stay responsive even while an
+   * expensive computation (e.g. scoring the whole universe) is warming up.
+   */
+  getOrTrigger<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): T | undefined {
+    const cached = this.get<T>(key);
+    if (cached !== undefined) return cached;
+
+    if (!this.inFlight.has(key)) {
+      const promise = this.run(key, ttlSeconds, fn);
+      this.inFlight.set(key, promise);
+      promise.catch((err) => this.logger.warn(`Cálculo en segundo plano para "${key}" falló: ${(err as Error).message}`));
+    }
+    return undefined;
+  }
+
+  private async run<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
+    try {
+      const value = await fn();
+      this.set(key, value, ttlSeconds);
+      return value;
+    } finally {
+      this.inFlight.delete(key);
+    }
   }
 
   invalidate(key: string): void {

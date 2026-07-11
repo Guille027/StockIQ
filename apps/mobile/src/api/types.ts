@@ -52,6 +52,10 @@ export interface HomeResponse {
   marketStatus: { isOpen: boolean; label: string };
   indices: IndexQuote[];
   topAiScores: HomeTopScore[];
+  /** false while the whole-universe score snapshot is still warming up in
+   * the background (can take a few minutes on a cold cache) -- topAiScores
+   * is an empty array in that case, not an error. */
+  topAiScoresReady: boolean;
   upcomingEarnings: unknown[];
   topNews: NewsItem[];
   biggestScoreChanges: ScoreChange[];

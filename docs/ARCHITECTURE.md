@@ -273,24 +273,32 @@ ya existían, no rediseñar el backend.
 
 ## 12. Roadmap (fase 2 y siguientes)
 
-### Pendiente urgente (siguiente sesión)
+### Resuelto (2026-07-11): Home ya no bloquea en frío
 
-- **Home tarda varios minutos en la primera carga real (bug de diseño, no de
-  key)**: `GET /home` llama a `ScoringService.getUniverseSnapshot()`, que
-  calcula el score de **las ~145 empresas del universo entero** solo para
-  poder mostrar el top 10 en pantalla. Con Finnhub real + `FinnhubThrottle`
-  (~1 petición/seg) y ~4 llamadas por empresa, eso son varios minutos en
-  frío -- el spinner del Home en el móvil se queda esperando ese tiempo. Se
-  probó en vivo el 2026-07-10/11: `curl /home` no responde en 30s (normal,
-  sigue calculando en el server). Verificado que el bundle/app arrancan bien
-  en Expo Go (Android, SDK 54) una vez resueltos los problemas de
-  compatibilidad -- este es el único bloqueante real que queda para probarlo
-  cómodamente en el móvil.
-  - Arreglo propuesto: calentar `scores:universe` en segundo plano al
-    arrancar el server (o con un cron periódico) en vez de calcularlo bajo
-    demanda en la primera petición; o hacer que `/home` solo pida scores de
-    un subconjunto pequeño (p. ej. últimos ya cacheados) y no bloquee en la
-    snapshot completa.
+`GET /home` calculaba el score de **las ~145 empresas del universo entero**
+de forma síncrona solo para poder mostrar el top 10, lo que en frío (Finnhub
+real + `FinnhubThrottle` ~1 petición/seg) tardaba varios minutos y dejaba el
+spinner del móvil colgado. Arreglado con tres piezas:
+
+- `CacheService.wrap` ahora deduplica llamadas concurrentes a la misma key
+  (single-flight) en vez de disparar el cálculo varias veces en paralelo.
+- Nuevo `CacheService.getOrTrigger(key, ttl, fn)`: devuelve el valor cacheado
+  si existe, si no dispara `fn` en segundo plano (compartiendo el mismo
+  in-flight que `wrap`) y devuelve `undefined` al momento -- nunca bloquea.
+- `ScoringService` implementa `OnModuleInit` y calienta `scores:universe` nada
+  más arrancar el servidor; `getUniverseSnapshotIfReady()` (usado por
+  `HomeService`) usa `getOrTrigger` y nunca bloquea, mientras que
+  `getUniverseSnapshot()` (usado por el scanner) sigue bloqueando a propósito
+  (acción explícita del usuario, se espera una respuesta real).
+- `HomeResponse` añade `topAiScoresReady: boolean`; el móvil
+  (`useHome` en `src/api/hooks.ts`) hace polling cada 15s mientras sea
+  `false` y la pantalla de Inicio muestra "Calculando puntuaciones..." en vez
+  de quedarse colgada.
+
+Verificado en vivo: `GET /home` responde en ~2.5s justo tras arrancar (antes
+no respondía ni en 30s), con `topAiScoresReady: false` y `topAiScores: []`;
+sigue respondiendo rápido (~0.3s) mientras el cálculo de fondo continúa, sin
+duplicar llamadas a Finnhub.
 
 1. **Calendario**: resultados/dividendos/splits reales desde el proveedor de
    datos + tabla de eventos curados manualmente.
