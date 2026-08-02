@@ -33,12 +33,14 @@ export default function PaperTradingListScreen() {
     <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={["top"]}>
       <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
         <View className="flex-row items-center justify-between mt-2 mb-1">
-          <Text className="text-2xl font-bold text-ink dark:text-inkDark">Paper Trading</Text>
+          <Text className="text-2xl font-bold text-ink dark:text-inkDark">Práctica</Text>
           <Pressable onPress={() => setShowForm((v) => !v)} className="bg-primary dark:bg-primaryDark px-3 py-1.5 rounded-full">
             <Text className="text-white text-sm font-medium">{showForm ? "Cancelar" : "+ Nueva"}</Text>
           </Pressable>
         </View>
-        <Text className="text-muted dark:text-mutedDark text-sm mb-4">Dinero ficticio, sin riesgo real.</Text>
+        <Text className="text-muted dark:text-mutedDark text-sm mb-4">
+          Tu campo de entrenamiento: dinero ficticio, decisiones reales. Cada operación te pedirá un plan.
+        </Text>
 
         {showForm ? (
           <Card className="mb-4">

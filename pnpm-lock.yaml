@@ -47,6 +47,9 @@ importers:
       '@prisma/client':
         specifier: ^5.21.1
         version: 5.22.0(prisma@5.22.0)
+      '@stockiq/curriculum':
+        specifier: workspace:*
+        version: link:../../packages/curriculum
       '@stockiq/scoring-engine':
         specifier: workspace:*
         version: link:../../packages/scoring-engine
@@ -174,6 +177,16 @@ importers:
         version: 19.1.17
       typescript:
         specifier: '*'
+        version: 5.9.3
+
+  packages/curriculum:
+    dependencies:
+      '@stockiq/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
         version: 5.9.3
 
   packages/scoring-engine:

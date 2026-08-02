@@ -10,6 +10,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { PriceChart } from "@/components/PriceChart";
+import { Disclaimer } from "@/components/Disclaimer";
 import { CATEGORY_LABELS } from "@/theme/score-color";
 import { cn } from "@/utils/cn";
 
@@ -72,6 +73,8 @@ export default function CompanyProfileScreen() {
               <Text className="text-primary dark:text-primaryDark text-xs">Datos de ejemplo (mock) -- configura las API keys del backend para datos reales.</Text>
             </View>
           ) : null}
+
+          <Disclaimer />
 
           <Card className="mt-4">
             <PriceChart bars={data.priceHistory} />

@@ -51,9 +51,11 @@ export default function ScannerScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={["top"]}>
-      <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text className="text-2xl font-bold text-ink dark:text-inkDark mt-2 mb-4">Scanner</Text>
+    <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={[]}>
+      <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32, paddingTop: 16 }}>
+        <Text className="text-muted dark:text-mutedDark text-xs mb-3">
+          Herramienta de análisis para practicar tus criterios -- los resultados no son recomendaciones.
+        </Text>
 
         <Card>
           <NumberField label="PER máximo" value={peMax} onChange={setPeMax} placeholder="ej. 25" />

@@ -32,6 +32,8 @@ import { AiController } from "./ai.controller";
     OrchestratorService,
     AiService,
   ],
-  exports: [AiService],
+  // AI_CLIENT is exported so other modules (coach) can run their own agents
+  // through the same provider abstraction (and its mock fallback story).
+  exports: [AiService, AI_CLIENT],
 })
 export class AiModule {}

@@ -31,7 +31,14 @@ export class PaperTradingController {
 
   @Post(":id/orders")
   placeOrder(@Param("id") id: string, @Body() dto: PlaceOrderDto) {
-    return this.paperTrading.placeOrder(id, dto.ticker, dto.side, { quantity: dto.quantity, amount: dto.amount });
+    return this.paperTrading.placeOrder(
+      id,
+      dto.ticker,
+      dto.side,
+      { quantity: dto.quantity, amount: dto.amount },
+      dto.plan,
+      dto.emotion,
+    );
   }
 
   @Post(":id/reset")

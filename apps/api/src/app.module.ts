@@ -16,6 +16,10 @@ import { CalendarModule } from "./calendar/calendar.module";
 import { BacktestingModule } from "./backtesting/backtesting.module";
 import { PaperTradingModule } from "./paper-trading/paper-trading.module";
 import { AlertsModule } from "./alerts/alerts.module";
+import { ProfileModule } from "./profile/profile.module";
+import { LearningModule } from "./learning/learning.module";
+import { JournalModule } from "./journal/journal.module";
+import { CoachModule } from "./coach/coach.module";
 import { AppController } from "./app.controller";
 
 @Module({
@@ -39,6 +43,10 @@ import { AppController } from "./app.controller";
     BacktestingModule,
     PaperTradingModule,
     AlertsModule,
+    ProfileModule,
+    LearningModule,
+    JournalModule,
+    CoachModule,
   ],
   controllers: [AppController],
 })

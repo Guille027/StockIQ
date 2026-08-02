@@ -1,9 +1,17 @@
 # StockIQ
 
-App de análisis de acciones con IA, pensada para un único usuario (sin login).
-Analiza ~130 grandes empresas cotizadas (S&P 100, Nasdaq-100, Dow Jones y
-grandes compañías europeas) -- nunca ETFs, cripto, forex, opciones ni penny
-stocks.
+Plataforma educativa de inversión, pensada para un único usuario (sin login).
+**Duolingo + TradingView + paper trading**: lecciones interactivas por niveles,
+un simulador que exige un plan antes de cada operación, un diario del inversor
+y una IA entrenadora que analiza tu proceso — nunca tus resultados.
+
+**StockIQ no da señales de compra/venta.** Su objetivo es que aprendas a
+analizar empresas y a tomar tus propias decisiones. Las herramientas de
+análisis (perfil de empresa con 9 scores explicables, screener, noticias)
+existen para practicar, no para recomendarte nada.
+
+Universo: ~145 grandes empresas cotizadas (S&P 100, Nasdaq-100, Dow Jones y
+grandes europeas) — nunca ETFs, cripto, forex, opciones ni penny stocks.
 
 Ver [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) para el diseño completo.
 
@@ -17,6 +25,7 @@ packages/
   shared-types/    Tipos compartidos
   universe/        Universo de empresas permitidas
   scoring-engine/  Motor de puntuación (con tests)
+  curriculum/      Lecciones (Niveles 0-6, español, estáticas)
 ```
 
 ## Requisitos
@@ -24,12 +33,11 @@ packages/
 - Node.js 20+
 - pnpm (`npm install -g pnpm`)
 - Un móvil Android con la app **Expo Go** instalada (Play Store), en la misma
-  red WiFi que tu PC -- o el emulador de Android Studio
+  red WiFi que tu PC — o el emulador de Android Studio
 
-No hace falta Docker ni cuenta de base de datos: la app está pensada para un
-único usuario, sin login ni registro. Paper Trading sí guarda datos (para que
-sobrevivan a reinicios del servidor), pero en un archivo SQLite local -- ver
-"Puesta en marcha" abajo.
+No hace falta Docker ni cuenta de base de datos. El progreso (XP, lecciones,
+diario, paper trading) se guarda en un archivo SQLite local — ver "Puesta en
+marcha".
 
 ## Puesta en marcha
 
@@ -38,30 +46,23 @@ pnpm install
 cp .env.example .env
 ```
 
-**La app funciona de punta a punta sin ninguna API key** -- usa datos e informes
-de ejemplo (mock), claramente etiquetados en la interfaz. Para datos e IA reales:
+**La app funciona de punta a punta sin ninguna API key** — usa datos e
+informes de ejemplo (mock), claramente etiquetados. Para datos e IA reales:
 
-1. **Datos de mercado (gratis)**: crea una cuenta en https://finnhub.io/register
-   y copia tu API key a `FINNHUB_API_KEY` en `.env`.
-2. **Gráfico de precio (gratis)**: el plan gratuito de Finnhub ya no incluye
-   histórico de velas. Crea una cuenta gratis (sin tarjeta, ~10s) en
-   https://twelvedata.com/pricing y copia tu key a `TWELVEDATA_API_KEY` en
-   `.env` para que el gráfico deje de ser de ejemplo.
-3. **IA (gratis)**: crea una key gratuita (sin tarjeta) en
-   [Google AI Studio](https://ai.google.dev) -> "Get API key", y cópiala a
-   `GEMINI_API_KEY` en `.env`. (Claude/Anthropic también funciona como
-   alternativa de pago vía `ANTHROPIC_API_KEY`, si algún día lo prefieres.)
+1. **Datos de mercado (gratis)**: https://finnhub.io/register →
+   `FINNHUB_API_KEY` en `.env`.
+2. **Gráfico de precio (gratis)**: https://twelvedata.com/pricing →
+   `TWELVEDATA_API_KEY`.
+3. **IA entrenadora (gratis)**: [Google AI Studio](https://ai.google.dev) →
+   "Get API key" → `GEMINI_API_KEY`. Sin ella, el coach y el resumen diario
+   muestran contenido de ejemplo etiquetado. (Claude/Anthropic funciona como
+   alternativa de pago vía `ANTHROPIC_API_KEY`.)
 
-**Para usar Paper Trading** (comprar/vender con dinero ficticio), crea la
-base de datos local una vez:
+**Crea la base de datos local una vez** (progreso, XP, diario, paper trading):
 
 ```bash
 pnpm db:push
 ```
-
-Esto crea `apps/api/prisma/dev.db` (SQLite, un archivo, nada que instalar).
-Sin este paso, el resto de la app funciona igual -- solo Paper Trading lo
-necesita.
 
 ### Arrancar el backend
 
@@ -69,8 +70,7 @@ necesita.
 pnpm dev:api
 ```
 
-Corre en `http://localhost:3000`. Documentación interactiva (Swagger) en
-`http://localhost:3000/docs`.
+Corre en `http://localhost:3000`. Swagger en `http://localhost:3000/docs`.
 
 ### Arrancar la app móvil
 
@@ -78,24 +78,14 @@ Corre en `http://localhost:3000`. Documentación interactiva (Swagger) en
 pnpm dev:mobile
 ```
 
-Esto abre el bundler de Expo con un código QR.
-
-- **En tu móvil Android**: abre la app **Expo Go**, escanea el QR (debes estar
-  en la misma red WiFi que el PC -- si el QR no se ve bien, en Expo Go pulsa
-  "Entrar URL manualmente" y escribe `exp://<IP-de-tu-PC>:8081`). También
-  puedes conectar el móvil por USB y usar `adb reverse tcp:8081 tcp:8081` si
-  prefieres no depender del WiFi.
-- **Si Expo Go dice "incompatible SDK version"**: abre Expo Go -> perfil ->
-  "SDK Version" para ver qué SDK soporta tu Expo Go instalado, y asegúrate de
-  que coincide con el `"expo": "~X.0.0"` de `apps/mobile/package.json`
-  (actualmente SDK 54). Si no coincide, hay que alinear el proyecto a esa
-  SDK con `npx expo install --fix` dentro de `apps/mobile` -- ver la nota
-  sobre Reanimated/worklets en `docs/ARCHITECTURE.md` (sección 11) antes de
-  tocar versiones a mano.
-- **Importante**: la app móvil necesita saber dónde está tu backend. Por
-  defecto usa `http://localhost:3000`, que **no funciona desde un móvil físico**
-  (localhost ahí es el propio teléfono). Averigua la IP local de tu PC con
-  `ipconfig` (busca "Dirección IPv4", algo como `192.168.1.42`) y arranca así:
+- **En tu móvil Android**: abre **Expo Go** y escanea el QR (misma WiFi que el
+  PC). Si el QR falla: "Entrar URL manualmente" → `exp://<IP-de-tu-PC>:8081`.
+- **Si Expo Go dice "incompatible SDK version"**: comprueba en Expo Go →
+  perfil → "SDK Version" que coincide con `"expo"` de
+  `apps/mobile/package.json` (actualmente SDK 54). Ver la nota sobre
+  Reanimated/worklets en `docs/ARCHITECTURE.md` antes de tocar versiones.
+- **Importante**: desde un móvil físico, `localhost` no funciona. Averigua tu
+  IP con `ipconfig` y arranca así:
 
   ```bash
   # PowerShell
@@ -103,26 +93,34 @@ Esto abre el bundler de Expo con un código QR.
   pnpm dev:mobile
   ```
 
-  (En el emulador de Android Studio, `http://localhost:3000` sí funciona tal cual
-  gracias al reenvío de puertos del propio emulador.)
-
 ## Scripts útiles
 
 | Comando | Qué hace |
 |---|---|
 | `pnpm dev` | Backend + app móvil a la vez |
 | `pnpm dev:api` / `pnpm dev:mobile` | Solo uno de los dos |
-| `pnpm test` | Tests de todos los paquetes (scoring-engine, etc.) |
+| `pnpm test` | Tests de todos los paquetes |
 | `pnpm build` | Compila packages + backend |
-| `pnpm db:push` | Crea/actualiza el archivo SQLite local (necesario para Paper Trading) |
+| `pnpm db:push` | Crea/actualiza el archivo SQLite local |
 
 ## Qué está implementado
 
-Home, perfil de empresa completo (fundamentales, gráfico, scores explicables,
-informe IA, competidores), scanner con filtros, noticias con deduplicación y
-sentimiento, y **Paper Trading** (varias carteras, comprar/vender, resetear)
--- todo funcional de extremo a extremo. Backtesting, alertas, calendario y
-chat IA están **scaffolded** (esquema de datos y contrato de API ya
-definidos, pantalla "Próximamente" en la app) para implementarse en la
-siguiente fase sin rehacer nada. Detalle completo en
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#8-estado-de-cada-subsistema-pedido).
+- **Aprender**: Niveles 0 ("¿Qué es invertir?", 5 lecciones) y 1 ("El lenguaje
+  del mercado", 7 lecciones) completos, con quizzes corregidos en servidor,
+  datos reales dentro de las lecciones y XP. Niveles 2-6 definidos y
+  bloqueados.
+- **Práctica**: paper trading con plan pre-operación obligatorio (por qué,
+  expectativa, riesgo, salida, stop, % de cartera) + estado emocional; P&L
+  realizado en cada venta.
+- **Diario**: entrada automática por operación, reflexiones con errores y
+  aprendizajes, notas libres.
+- **IA entrenadora**: feedback por operación cerrada y revisión de periodo,
+  con Gemini (gratis) y fallback de ejemplo sin key.
+- **Perfil**: XP, 10 rangos, rachas diarias, actividad.
+- **Explorar**: índices reales, búsqueda, screener, noticias con sentimiento,
+  perfil de empresa completo con 9 scores explicables e informe IA — todo
+  reencuadrado como herramientas de práctica, sin recomendaciones.
+
+Fase 2 (misiones, simulaciones históricas, estadísticas avanzadas, radar de
+habilidades, Niveles 2-6): ver el roadmap en
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#7-roadmap).

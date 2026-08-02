@@ -1,4 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  CoachFeedbackResponse,
+  CompleteLessonResponse,
+  EmotionalState,
+  JournalEntryDto,
+  Lesson,
+  LessonAnswers,
+  PlaceOrderResponse,
+  ProfileResponse,
+  RoadmapResponse,
+  SaveReflectionRequest,
+  TradePlanDto,
+  TradePlanInput,
+} from "@stockiq/shared-types";
 import { apiFetch } from "./client";
 import type {
   AiReport,
@@ -18,10 +32,50 @@ export function useHome() {
     queryKey: ["home"],
     queryFn: () => apiFetch<HomeResponse>("/home"),
     staleTime: 5 * 60 * 1000,
-    // Keep polling every 15s while the universe score snapshot is still
-    // warming up server-side, so the "Mejor puntuación IA" list fills in on
-    // its own without the user having to pull-to-refresh.
-    refetchInterval: (query) => (query.state.data?.topAiScoresReady ? false : 15_000),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Learning / profile
+// ---------------------------------------------------------------------------
+
+export function useRoadmap() {
+  return useQuery({
+    queryKey: ["roadmap"],
+    queryFn: () => apiFetch<RoadmapResponse>("/learning/roadmap"),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useLesson(id: string) {
+  return useQuery({
+    queryKey: ["lesson", id],
+    queryFn: () => apiFetch<Lesson>(`/learning/lessons/${id}`),
+    enabled: !!id,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useCompleteLesson(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (answers: LessonAnswers) =>
+      apiFetch<CompleteLessonResponse>(`/learning/lessons/${id}/complete`, {
+        method: "POST",
+        body: JSON.stringify({ answers }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["roadmap"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+export function useProfile() {
+  return useQuery({
+    queryKey: ["profile"],
+    queryFn: () => apiFetch<ProfileResponse>("/profile"),
+    staleTime: 30 * 1000,
   });
 }
 
@@ -130,15 +184,93 @@ export function useCreatePortfolio() {
   });
 }
 
+export interface PlaceOrderInput {
+  ticker: string;
+  side: "buy" | "sell";
+  quantity?: number;
+  amount?: number;
+  plan: TradePlanInput;
+  emotion: EmotionalState;
+}
+
 export function usePlaceOrder(portfolioId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dto: { ticker: string; side: "buy" | "sell"; quantity?: number; amount?: number }) =>
-      apiFetch<PortfolioStats>(`/paper-trading/portfolios/${portfolioId}/orders`, { method: "POST", body: JSON.stringify(dto) }),
-    onSuccess: (stats) => {
-      queryClient.setQueryData(["portfolio", portfolioId], stats);
+    mutationFn: (dto: PlaceOrderInput) =>
+      apiFetch<PlaceOrderResponse>(`/paper-trading/portfolios/${portfolioId}/orders`, { method: "POST", body: JSON.stringify(dto) }),
+    onSuccess: (res) => {
+      queryClient.setQueryData(["portfolio", portfolioId], res.portfolio);
       queryClient.invalidateQueries({ queryKey: ["portfolio-orders", portfolioId] });
       queryClient.invalidateQueries({ queryKey: ["portfolios"] });
+      queryClient.invalidateQueries({ queryKey: ["journal"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Journal
+// ---------------------------------------------------------------------------
+
+export function useJournal(filter: { ticker?: string; kind?: string } = {}) {
+  const qs = new URLSearchParams();
+  if (filter.ticker) qs.set("ticker", filter.ticker);
+  if (filter.kind) qs.set("kind", filter.kind);
+  return useQuery({
+    queryKey: ["journal", filter],
+    queryFn: () => apiFetch<JournalEntryDto[]>(`/journal?${qs.toString()}`),
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useJournalEntry(id: string) {
+  return useQuery({
+    queryKey: ["journal-entry", id],
+    queryFn: () => apiFetch<JournalEntryDto & { tradePlan?: TradePlanDto }>(`/journal/${id}`),
+    enabled: !!id,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Coach
+// ---------------------------------------------------------------------------
+
+export function useCoachFeedback(orderId: string | undefined) {
+  return useQuery({
+    queryKey: ["coach", orderId],
+    queryFn: () => apiFetch<CoachFeedbackResponse>(`/coach/trades/${orderId}`),
+    enabled: !!orderId,
+    retry: false, // 404 just means "not generated yet"
+    staleTime: Infinity, // permanent server-side cache
+  });
+}
+
+export function useRequestCoachFeedback(orderId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiFetch<CoachFeedbackResponse>(`/coach/trades/${orderId}`, { method: "POST" }),
+    onSuccess: (res) => {
+      queryClient.setQueryData(["coach", orderId], res);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+export function useCoachReview() {
+  return useMutation({
+    mutationFn: () => apiFetch<CoachFeedbackResponse>("/coach/review", { method: "POST" }),
+  });
+}
+
+export function useSaveReflection(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: SaveReflectionRequest) =>
+      apiFetch<JournalEntryDto & { xpAwarded: number }>(`/journal/${id}/reflection`, { method: "PATCH", body: JSON.stringify(dto) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["journal-entry", id] });
+      queryClient.invalidateQueries({ queryKey: ["journal"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }

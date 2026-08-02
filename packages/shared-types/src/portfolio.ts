@@ -22,6 +22,19 @@ export interface PaperOrder {
   quantity: number;
   price: number;
   executedAt: string;
+  /** Sells only: realized P&L vs. average cost at the moment of selling. */
+  realizedPnl?: number;
+  realizedPnlPct?: number;
+}
+
+/**
+ * Placing an order now returns the order id too: the mobile app needs it to
+ * deep-link the freshly created journal entry and to request coach feedback.
+ */
+export interface PlaceOrderResponse {
+  portfolio: PortfolioStats;
+  orderId: string;
+  xpAwarded: number;
 }
 
 export interface PortfolioStats extends PaperPortfolio {

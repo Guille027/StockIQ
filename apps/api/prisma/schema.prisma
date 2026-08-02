@@ -42,14 +42,19 @@ model PaperPortfolio {
 }
 
 model PaperOrder {
-  id          String         @id @default(cuid())
-  portfolioId String
-  portfolio   PaperPortfolio @relation(fields: [portfolioId], references: [id])
-  ticker      String
-  side        String
-  quantity    Float
-  price       Float
-  executedAt  DateTime       @default(now())
+  id             String         @id @default(cuid())
+  portfolioId    String
+  portfolio      PaperPortfolio @relation(fields: [portfolioId], references: [id])
+  ticker         String
+  side           String
+  quantity       Float
+  price          Float
+  executedAt     DateTime       @default(now())
+  // Ventas solamente: P&L realizado frente al coste medio en el momento de
+  // vender. Es la semilla de las estadísticas de fase 2 (win rate, profit
+  // factor...) y lo que permite al coach hablar de resultados concretos.
+  realizedPnl    Float?
+  realizedPnlPct Float?
 }
 
 /// Phase 2 (alerts) -- schema is ready, evaluation engine is scaffolded only.
@@ -81,4 +86,93 @@ model AiReportCache {
   ticker      String   @id
   reportJson  String // JSON-encoded AiReport
   generatedAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Plataforma educativa ("Duolingo + TradingView + paper trading").
+// Sin userId, igual que PaperPortfolio: la app es de un solo usuario.
+// ---------------------------------------------------------------------------
+
+/// Fila singleton (id = "default"), creada lazy por ProfileService.
+model UserProfile {
+  id             String   @id @default("default")
+  xpTotal        Int      @default(0)
+  rank           Int      @default(1) // cacheado desde xpTotal vía RANK_THRESHOLDS
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate String? // "YYYY-MM-DD" (fecha local del servidor) de la última acción con XP
+  statsJson      String   @default("{}") // fase 2: win rate, profit factor, disciplina...
+  skillsJson     String   @default("{}") // fase 2: ejes del radar de habilidades (0-100)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+/// Una fila por lección completada alguna vez. lessonId es único: repetir la
+/// lección actualiza la fila, nunca duplica (el XP idempotente vive en XpEvent).
+model LessonProgress {
+  id               String   @id @default(cuid())
+  lessonId         String   @unique // ej. "n1-l3" -- debe existir en @stockiq/curriculum
+  levelId          String // ej. "nivel-1" (desnormalizado para la query del roadmap)
+  attempts         Int      @default(1)
+  bestScorePct     Float // mejor puntuación de quiz 0-100
+  lastScorePct     Float
+  answersJson      String // JSON: últimas respuestas enviadas (índice de bloque -> elección)
+  firstCompletedAt DateTime @default(now())
+  lastCompletedAt  DateTime @default(now())
+}
+
+/// Ledger de XP append-only. dedupeKey es el mecanismo de idempotencia:
+/// otorgar con una key existente es un no-op silencioso. UserProfile.xpTotal
+/// es la suma cacheada, siempre actualizada en la misma transacción.
+model XpEvent {
+  id        String   @id @default(cuid())
+  kind      String // XpKind en shared-types
+  amount    Int
+  refId     String? // lessonId, orderId, journalEntryId, ticker...
+  dedupeKey String   @unique // ej. "lesson:n0-l1", "coach:ord_abc", "streak:2026-08-03"
+  createdAt DateTime @default(now())
+}
+
+/// El cuestionario pre-operación obligatorio, 1:1 con la orden que justificó.
+model TradePlan {
+  id           String   @id @default(cuid())
+  orderId      String   @unique
+  portfolioId  String
+  ticker       String
+  side         String // "buy" | "sell"
+  reason       String // ¿Por qué compras/vendes?
+  expectation  String // ¿Qué esperas que ocurra?
+  riskNoted    String // ¿Qué riesgo ves?
+  exitPlan     String // ¿Dónde sales si te equivocas?
+  stopPrice    Float?
+  portfolioPct Float // % de la cartera que representa la orden (recomputado en servidor)
+  emotion      String // EmotionalState en shared-types
+  createdAt    DateTime @default(now())
+}
+
+/// Creada automáticamente desde cada TradePlan; el usuario la enriquece
+/// después con su reflexión.
+model JournalEntry {
+  id          String    @id @default(cuid())
+  kind        String    @default("trade") // "trade" | "note" (fase 2: "mission", "scenario")
+  orderId     String?   @unique // presente para kind="trade"
+  portfolioId String?
+  ticker      String?
+  contentJson String // JournalContent (shared-types): snapshot del plan, emoción, resultPct?, reflection?, mistakes[], learnings[]
+  reflectedAt DateTime? // se fija cuando el usuario escribe la reflexión post-operación
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Salida del coach cacheada de forma permanente -- máximo una llamada a
+/// Gemini por operación cerrada, y una por día para revisiones de periodo.
+model CoachFeedback {
+  id           String   @id @default(cuid())
+  scope        String // "trade" | "period" (fase 2: "scenario")
+  refId        String // orderId para scope="trade"; "YYYY-MM-DD" para "period"
+  feedbackJson String // CoachFeedbackDto (shared-types)
+  isMock       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@unique([scope, refId])
 }

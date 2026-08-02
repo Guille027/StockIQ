@@ -20,10 +20,8 @@ export default function SettingsScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={["top"]}>
-      <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text className="text-2xl font-bold text-ink dark:text-inkDark mt-2 mb-4">Ajustes</Text>
-
+    <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={[]}>
+      <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32, paddingTop: 16 }}>
         <Text className="text-ink dark:text-inkDark font-semibold mb-2">Apariencia</Text>
         <Card className="flex-row gap-2 mb-4">
           {THEME_OPTIONS.map((opt) => (

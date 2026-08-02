@@ -29,7 +29,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      // Fastify rejects a JSON content-type with an empty body, so only
+      // declare it when we're actually sending one (body-less POSTs like
+      // /coach/review or /reset stay header-less).
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
       ...init?.headers,
     },
   });

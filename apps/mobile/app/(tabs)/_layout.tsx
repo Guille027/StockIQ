@@ -10,19 +10,19 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: isDark ? "#5B8DEF" : "#2563EB",
-        tabBarInactiveTintColor: isDark ? "#8B93A7" : "#6B7280",
+        tabBarActiveTintColor: isDark ? "#818CF8" : "#6366F1",
+        tabBarInactiveTintColor: isDark ? "#98A0AA" : "#77716A",
         tabBarStyle: {
-          backgroundColor: isDark ? "#0B1120" : "#FFFFFF",
-          borderTopColor: isDark ? "#1F2A3F" : "#E5E7EB",
+          backgroundColor: isDark ? "#101418" : "#FFFFFF",
+          borderTopColor: isDark ? "#2A313A" : "#E7E5E0",
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Inicio", tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} /> }} />
-      <Tabs.Screen name="scanner" options={{ title: "Scanner", tabBarIcon: ({ color, size }) => <Ionicons name="search" color={color} size={size} /> }} />
-      <Tabs.Screen name="watchlist" options={{ title: "Cartera", tabBarIcon: ({ color, size }) => <Ionicons name="briefcase" color={color} size={size} /> }} />
-      <Tabs.Screen name="chat" options={{ title: "Chat IA", tabBarIcon: ({ color, size }) => <Ionicons name="chatbubble-ellipses" color={color} size={size} /> }} />
-      <Tabs.Screen name="settings" options={{ title: "Ajustes", tabBarIcon: ({ color, size }) => <Ionicons name="settings" color={color} size={size} /> }} />
+      <Tabs.Screen name="index" options={{ title: "Aprender", tabBarIcon: ({ color, size }) => <Ionicons name="school" color={color} size={size} /> }} />
+      <Tabs.Screen name="practice" options={{ title: "Práctica", tabBarIcon: ({ color, size }) => <Ionicons name="trending-up" color={color} size={size} /> }} />
+      <Tabs.Screen name="explore" options={{ title: "Explorar", tabBarIcon: ({ color, size }) => <Ionicons name="compass" color={color} size={size} /> }} />
+      <Tabs.Screen name="journal" options={{ title: "Diario", tabBarIcon: ({ color, size }) => <Ionicons name="book" color={color} size={size} /> }} />
+      <Tabs.Screen name="profile" options={{ title: "Perfil", tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" color={color} size={size} /> }} />
     </Tabs>
   );
 }

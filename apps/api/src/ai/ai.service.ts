@@ -61,8 +61,10 @@ export class AiService {
       try {
         const result = await this.client.callStructured<{ headline: string; body: string }>({
           system:
-            "Eres un analista de mercado. Con los datos de índices y noticias que se te dan, escribe un resumen diario breve, prudente y " +
-            "sin hacer predicciones categóricas. Nunca inventas cifras que no estén en los datos proporcionados.",
+            "Eres el redactor de una plataforma EDUCATIVA de inversión. Con los índices y noticias dados, escribe un resumen diario breve que ayude " +
+            "a un principiante a ENTENDER qué ha movido el mercado hoy y, si encaja con naturalidad, qué concepto de inversión ayuda a interpretarlo " +
+            "(ej. 'esto es la rotación sectorial en acción'). Prohibido: presentar cualquier empresa como atractiva u oportunidad, sugerir compras o " +
+            "ventas, y hacer predicciones. Nunca inventas cifras que no estén en los datos proporcionados.",
           user: `Índices:\n${JSON.stringify(indices)}\n\nNoticias destacadas:\n${news.map((n) => `- ${n.headline}`).join("\n")}`,
           toolName: "submit_daily_summary",
           toolDescription: "Envía el resumen diario del mercado",

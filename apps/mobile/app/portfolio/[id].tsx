@@ -1,9 +1,7 @@
-import { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { usePortfolio, usePortfolioOrders, usePlaceOrder, useResetPortfolio, useDeletePortfolio, useTickerSearch } from "@/api/hooks";
-import { ApiError } from "@/api/client";
+import { usePortfolio, usePortfolioOrders, useResetPortfolio, useDeletePortfolio } from "@/api/hooks";
 import { Card } from "@/components/Card";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
@@ -22,52 +20,8 @@ export default function PortfolioDetailScreen() {
   const portfolioId = id ?? "";
   const { data: portfolio, isLoading, isError, refetch } = usePortfolio(portfolioId);
   const { data: orders } = usePortfolioOrders(portfolioId);
-  const placeOrder = usePlaceOrder(portfolioId);
   const resetPortfolio = useResetPortfolio(portfolioId);
   const deletePortfolio = useDeletePortfolio();
-
-  const [ticker, setTicker] = useState("");
-  const [tickerSelected, setTickerSelected] = useState(false);
-  const [side, setSide] = useState<"buy" | "sell">("buy");
-  const [inputMode, setInputMode] = useState<"shares" | "amount">("shares");
-  const [amountValue, setAmountValue] = useState("");
-  const [orderError, setOrderError] = useState<string | null>(null);
-
-  const { data: searchResults } = useTickerSearch(tickerSelected ? "" : ticker);
-  const showSuggestions = !tickerSelected && ticker.length > 0 && (searchResults?.results.length ?? 0) > 0;
-
-  const selectTicker = (t: string) => {
-    setTicker(t);
-    setTickerSelected(true);
-  };
-
-  const submitOrder = () => {
-    setOrderError(null);
-    if (!ticker.trim()) {
-      setOrderError("Elige una empresa del listado.");
-      return;
-    }
-    const value = Number(amountValue);
-    if (!value || value <= 0) {
-      setOrderError(inputMode === "shares" ? "Introduce una cantidad de acciones válida." : "Introduce un importe en dólares válido.");
-      return;
-    }
-    const dto = {
-      ticker: ticker.trim().toUpperCase(),
-      side,
-      ...(inputMode === "shares" ? { quantity: value } : { amount: value }),
-    };
-    placeOrder.mutate(dto, {
-      onSuccess: () => {
-        setTicker("");
-        setTickerSelected(false);
-        setAmountValue("");
-      },
-      onError: (err) => {
-        setOrderError(err instanceof ApiError ? err.message : "No se pudo ejecutar la orden.");
-      },
-    });
-  };
 
   const confirmReset = () => {
     Alert.alert("Resetear cartera", "Esto borra todas las órdenes y devuelve el efectivo al saldo inicial. ¿Continuar?", [
@@ -114,70 +68,22 @@ export default function PortfolioDetailScreen() {
             </View>
           </Card>
 
-          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Comprar / Vender</Text>
-          <Card>
-            <View className="flex-row gap-2 mb-3">
-              <Pressable onPress={() => setSide("buy")} className="flex-1">
-                <View className={cn("py-2 rounded-lg items-center", side === "buy" ? "bg-positive" : "bg-surface dark:bg-surfaceDark")}>
-                  <Text className={side === "buy" ? "text-white font-medium" : "text-ink dark:text-inkDark"}>Comprar</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={() => setSide("sell")} className="flex-1">
-                <View className={cn("py-2 rounded-lg items-center", side === "sell" ? "bg-negative" : "bg-surface dark:bg-surfaceDark")}>
-                  <Text className={side === "sell" ? "text-white font-medium" : "text-ink dark:text-inkDark"}>Vender</Text>
-                </View>
-              </Pressable>
-            </View>
-
-            <Text className="text-ink dark:text-inkDark text-sm font-medium mb-1">Empresa</Text>
-            <TextInput
-              value={ticker}
-              onChangeText={(t) => {
-                setTicker(t.toUpperCase());
-                setTickerSelected(false);
-              }}
-              placeholder="Escribe el nombre o el ticker, ej. Lilly o L"
-              placeholderTextColor="#8B93A7"
-              autoCapitalize="characters"
-              className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
-            />
-            {showSuggestions ? (
-              <View className="border border-border dark:border-borderDark rounded-xl mt-1 overflow-hidden" style={{ maxHeight: 220 }}>
-                <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled>
-                  {searchResults!.results.map((r) => (
-                    <Pressable key={r.ticker} onPress={() => selectTicker(r.ticker)}>
-                      <View className="px-3 py-2.5 border-b border-border dark:border-borderDark">
-                        <Text className="text-ink dark:text-inkDark font-medium">
-                          {r.ticker} <Text className="text-muted dark:text-mutedDark font-normal">· {r.name}</Text>
-                        </Text>
-                      </View>
-                    </Pressable>
-                  ))}
-                </ScrollView>
+          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Operar</Text>
+          <Text className="text-muted dark:text-mutedDark text-xs mb-2">
+            Toda operación empieza con un plan: por qué entras, qué riesgo ves y dónde sales. Sin plan no hay orden.
+          </Text>
+          <View className="flex-row gap-2">
+            <Pressable className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=buy`)}>
+              <View className="bg-primary rounded-xl py-3.5 items-center">
+                <Text className="text-white font-semibold">Comprar con plan</Text>
               </View>
-            ) : null}
-
-            <View className="flex-row items-center justify-between mt-3 mb-1">
-              <Text className="text-ink dark:text-inkDark text-sm font-medium">{inputMode === "shares" ? "Cantidad de acciones" : "Importe en dólares"}</Text>
-              <Pressable onPress={() => setInputMode((m) => (m === "shares" ? "amount" : "shares"))}>
-                <Text className="text-primary dark:text-primaryDark text-xs font-medium">
-                  {inputMode === "shares" ? "Comprar por importe ($) en vez de acciones" : "Comprar por número de acciones en vez de importe"}
-                </Text>
-              </Pressable>
-            </View>
-            <TextInput
-              value={amountValue}
-              onChangeText={setAmountValue}
-              placeholder={inputMode === "shares" ? "ej. 10 acciones" : "ej. 2500 (compra $2500 en acciones)"}
-              placeholderTextColor="#8B93A7"
-              keyboardType="numeric"
-              className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark mb-3"
-            />
-            {orderError ? <Text className="text-negative dark:text-negativeDark text-xs mb-3">{orderError}</Text> : null}
-            <Pressable onPress={submitOrder} disabled={placeOrder.isPending} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
-              <Text className="text-white font-semibold">{placeOrder.isPending ? "Ejecutando..." : side === "buy" ? "Comprar" : "Vender"}</Text>
             </Pressable>
-          </Card>
+            <Pressable className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=sell`)}>
+              <View className="border border-primary rounded-xl py-3.5 items-center">
+                <Text className="text-primary dark:text-primaryDark font-semibold">Vender con plan</Text>
+              </View>
+            </Pressable>
+          </View>
 
           <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Posiciones</Text>
           {portfolio.positions.length === 0 ? (
@@ -227,7 +133,14 @@ export default function PortfolioDetailScreen() {
                       {o.quantity} @ {fmtMoney(o.price)}
                     </Text>
                   </View>
-                  <Text className="text-muted dark:text-mutedDark text-xs">{new Date(o.executedAt).toLocaleDateString()}</Text>
+                  <View className="items-end">
+                    <Text className="text-muted dark:text-mutedDark text-xs">{new Date(o.executedAt).toLocaleDateString()}</Text>
+                    {o.realizedPnlPct !== undefined ? (
+                      <Text className={o.realizedPnlPct >= 0 ? "text-positive dark:text-positiveDark text-xs mt-0.5" : "text-negative dark:text-negativeDark text-xs mt-0.5"}>
+                        {fmtPct(o.realizedPnlPct)} realizado
+                      </Text>
+                    ) : null}
+                  </View>
                 </Card>
               ))}
             </View>

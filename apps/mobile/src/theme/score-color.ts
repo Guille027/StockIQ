@@ -1,10 +1,11 @@
 /** Consistent score -> color mapping used across badges, scanner rows and
  * score breakdown bars. 0-100, higher is always "better" for the category
- * it's attached to (risk/momentum/etc. are already framed that way upstream). */
+ * it's attached to (risk/momentum/etc. are already framed that way upstream).
+ * Softened teal/amber/terracotta family -- learning app, not casino. */
 export function scoreColor(value: number): { light: string; dark: string } {
-  if (value >= 65) return { light: "#16A34A", dark: "#34D399" };
-  if (value >= 45) return { light: "#D97706", dark: "#FBBF24" };
-  return { light: "#DC2626", dark: "#F87171" };
+  if (value >= 65) return { light: "#2FA98C", dark: "#5BC4A8" };
+  if (value >= 45) return { light: "#D19A2F", dark: "#E8BC5A" };
+  return { light: "#E0755F", dark: "#EE9B85" };
 }
 
 export function scoreLabel(value: number): string {

@@ -12,7 +12,6 @@ import type {
   PriceBar,
   ScannerFilter,
   ScannerResultRow,
-  ScoreChange,
 } from "@stockiq/shared-types";
 
 export type { ScannerFilter, ScannerResultRow, CompanyScores, Fundamentals, Company, NewsItem, AiReport, PriceBar, PortfolioStats, PaperOrder };
@@ -42,25 +41,15 @@ export interface CompanyProfileResponse {
   competitors: CompetitorComparison[];
 }
 
-export interface HomeTopScore {
-  ticker: string;
-  name: string;
-  sector: string;
-  globalScore: number;
-}
-
+/**
+ * Market overview for the Explorar tab. No "best companies" ranking on
+ * purpose: StockIQ teaches analysis, it never points at what to buy.
+ */
 export interface HomeResponse {
   isMock: boolean;
   marketStatus: { isOpen: boolean; label: string };
   indices: IndexQuote[];
-  topAiScores: HomeTopScore[];
-  /** false while the whole-universe score snapshot is still warming up in
-   * the background (can take a few minutes on a cold cache) -- topAiScores
-   * is an empty array in that case, not an error. */
-  topAiScoresReady: boolean;
-  upcomingEarnings: unknown[];
   topNews: NewsItem[];
-  biggestScoreChanges: ScoreChange[];
   dailySummary: DailyMarketSummary;
 }
 

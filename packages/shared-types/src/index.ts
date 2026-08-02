@@ -8,3 +8,7 @@ export * from "./calendar";
 export * from "./backtesting";
 export * from "./portfolio";
 export * from "./alert";
+export * from "./lesson";
+export * from "./xp";
+export * from "./journal";
+export * from "./coach";

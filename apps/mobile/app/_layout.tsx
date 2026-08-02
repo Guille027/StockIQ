@@ -36,6 +36,17 @@ export default function RootLayout() {
               name="portfolio/[id]"
               options={{ headerShown: true, headerTitle: "", headerBackTitle: "Atrás" }}
             />
+            <Stack.Screen name="lesson/[id]" />
+            <Stack.Screen name="order/new" options={{ presentation: "modal" }} />
+            <Stack.Screen name="journal/[id]" />
+            <Stack.Screen
+              name="scanner"
+              options={{ headerShown: true, headerTitle: "Screener", headerBackTitle: "Atrás" }}
+            />
+            <Stack.Screen
+              name="settings"
+              options={{ headerShown: true, headerTitle: "Ajustes", headerBackTitle: "Atrás" }}
+            />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>
