@@ -9,10 +9,10 @@ export function CoachFeedbackCard({ feedback }: { feedback: CoachFeedbackDto }) 
     <Card>
       <View className="flex-row items-center gap-2 mb-2">
         <Text className="text-lg">🧑‍🏫</Text>
-        <Text className="text-ink dark:text-inkDark font-semibold flex-1">Tu mentor</Text>
+        <Text className="font-sans-bold text-ink dark:text-inkDark flex-1">Tu mentor</Text>
         {feedback.isMock ? (
-          <View className="bg-muted/15 px-2 py-0.5 rounded-full">
-            <Text className="text-muted dark:text-mutedDark text-[10px]">Ejemplo (sin clave IA)</Text>
+          <View className="bg-surface dark:bg-surfaceDark px-2 py-0.5 rounded-full">
+            <Text className="font-mono text-muted dark:text-mutedDark text-[10px]">Ejemplo (sin clave IA)</Text>
           </View>
         ) : null}
       </View>
@@ -22,7 +22,7 @@ export function CoachFeedbackCard({ feedback }: { feedback: CoachFeedbackDto }) 
 
       {feedback.strengths.length > 0 ? (
         <>
-          <Text className="text-positive dark:text-positiveDark text-xs font-semibold mt-3 mb-1">Lo que hiciste bien</Text>
+          <Text className="font-sans-bold text-positive dark:text-positiveDark text-xs mt-3 mb-1">Lo que hiciste bien</Text>
           {feedback.strengths.map((s, i) => (
             <Text key={i} className="text-ink dark:text-inkDark text-sm leading-5">
               • {s}
@@ -33,7 +33,7 @@ export function CoachFeedbackCard({ feedback }: { feedback: CoachFeedbackDto }) 
 
       {feedback.improvements.length > 0 ? (
         <>
-          <Text className="text-accent dark:text-accentDark text-xs font-semibold mt-3 mb-1">Para la próxima</Text>
+          <Text className="font-sans-bold text-accent dark:text-accentDark text-xs mt-3 mb-1">Para la próxima</Text>
           {feedback.improvements.map((s, i) => (
             <Text key={i} className="text-ink dark:text-inkDark text-sm leading-5">
               • {s}
@@ -46,8 +46,8 @@ export function CoachFeedbackCard({ feedback }: { feedback: CoachFeedbackDto }) 
         <View className="flex-row flex-wrap gap-2 mt-3">
           {feedback.suggestedLessonIds.map((id) => (
             <Pressable key={id} onPress={() => router.push(`/lesson/${id}`)}>
-              <View className="bg-primary/10 px-3 py-1.5 rounded-full">
-                <Text className="text-primary dark:text-primaryDark text-xs font-medium">📘 Repasar {id}</Text>
+              <View className="bg-primarySoft dark:bg-primarySoftDark px-3 py-1.5 rounded-full">
+                <Text className="font-sans-semibold text-primary dark:text-primaryDark text-xs">📘 Repasar {id}</Text>
               </View>
             </Pressable>
           ))}

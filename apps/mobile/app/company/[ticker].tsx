@@ -35,7 +35,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   return (
     <View className="w-1/2 mb-3 pr-2">
       <Text className="text-muted dark:text-mutedDark text-xs">{label}</Text>
-      <Text className="text-ink dark:text-inkDark font-medium mt-0.5">{value}</Text>
+      <Text className="font-mono-bold text-ink dark:text-inkDark mt-0.5">{value}</Text>
     </View>
   );
 }
@@ -62,7 +62,7 @@ export default function CompanyProfileScreen() {
       {data && f ? (
         <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 40 }}>
           <View className="mt-2">
-            <Text className="text-2xl font-bold text-ink dark:text-inkDark">{data.company.name}</Text>
+            <Text className="font-display text-2xl text-ink dark:text-inkDark">{data.company.name}</Text>
             <Text className="text-muted dark:text-mutedDark text-sm mt-0.5">
               {data.company.ticker} · {data.company.sector} · {data.company.industry}
             </Text>
@@ -94,7 +94,7 @@ export default function CompanyProfileScreen() {
             {data.scores.breakdowns.map((b) => (
               <Card key={b.category}>
                 <View className="flex-row items-center justify-between mb-1">
-                  <Text className="text-ink dark:text-inkDark font-medium">{CATEGORY_LABELS[b.category] ?? b.category}</Text>
+                  <Text className="font-sans-semibold text-ink dark:text-inkDark">{CATEGORY_LABELS[b.category] ?? b.category}</Text>
                   <ScoreBadge value={b.value} size="sm" />
                 </View>
                 <Text className="text-muted dark:text-mutedDark text-xs leading-4">{b.summary}</Text>
@@ -130,8 +130,8 @@ export default function CompanyProfileScreen() {
           <View className="flex-row gap-2 mb-3">
             {AI_TABS.map((tab) => (
               <Pressable key={tab} onPress={() => setAiTab(tab)} className="flex-1">
-                <View className={cn("py-2 rounded-lg items-center", aiTab === tab ? "bg-primary" : "bg-surface dark:bg-surfaceDark")}>
-                  <Text className={aiTab === tab ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>{tab}</Text>
+                <View className={cn("py-2 rounded-lg items-center", aiTab === tab ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")}>
+                  <Text className={aiTab === tab ? "font-sans-semibold text-white text-xs" : "text-ink dark:text-inkDark text-xs"}>{tab}</Text>
                 </View>
               </Pressable>
             ))}
@@ -145,7 +145,7 @@ export default function CompanyProfileScreen() {
                 disabled={generateReport.isPending}
                 className="bg-primary dark:bg-primaryDark rounded-xl px-5 py-2.5"
               >
-                <Text className="text-white font-semibold">{generateReport.isPending ? "Generando..." : "Generar informe IA"}</Text>
+                <Text className="font-sans-bold text-white">{generateReport.isPending ? "Generando..." : "Generar informe IA"}</Text>
               </Pressable>
             </Card>
           ) : null}
@@ -164,8 +164,8 @@ export default function CompanyProfileScreen() {
               data.competitors.map((c) => (
                 <View key={c.ticker} className="flex-row items-center justify-between py-2 border-b border-border dark:border-borderDark last:border-b-0">
                   <View className="flex-1 pr-2">
-                    <Text className="text-ink dark:text-inkDark font-medium">{c.ticker}</Text>
-                    <Text className="text-muted dark:text-mutedDark text-xs" numberOfLines={1}>
+                    <Text className="font-sans-bold text-ink dark:text-inkDark">{c.ticker}</Text>
+                    <Text className="font-mono text-muted dark:text-mutedDark text-xs" numberOfLines={1}>
                       PER {fmt(c.peRatio)} · ROE {fmt(c.roe, { pct: true })}
                     </Text>
                   </View>
@@ -235,7 +235,7 @@ function BulletList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <View>
-      <Text className="text-ink dark:text-inkDark font-medium text-sm mb-1">{title}</Text>
+      <Text className="font-sans-bold text-ink dark:text-inkDark text-sm mb-1">{title}</Text>
       {items.map((item, i) => (
         <Text key={i} className="text-muted dark:text-mutedDark text-sm leading-5">
           • {item}

@@ -52,40 +52,40 @@ export default function PortfolioDetailScreen() {
         <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
           <Card className="mt-2">
             <Text className="text-muted dark:text-mutedDark text-xs">Valor total</Text>
-            <Text className="text-ink dark:text-inkDark text-3xl font-bold mt-1">{fmtMoney(portfolio.totalValue)}</Text>
-            <Text className={cn("text-sm font-medium mt-1", portfolio.totalReturnPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
+            <Text className="font-mono-bold text-ink dark:text-inkDark text-3xl mt-1">{fmtMoney(portfolio.totalValue)}</Text>
+            <Text className={cn("font-mono text-sm mt-1", portfolio.totalReturnPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
               {fmtPct(portfolio.totalReturnPct)} desde el inicio
             </Text>
             <View className="flex-row justify-between mt-3 pt-3 border-t border-border dark:border-borderDark">
               <View>
                 <Text className="text-muted dark:text-mutedDark text-xs">Efectivo</Text>
-                <Text className="text-ink dark:text-inkDark font-medium mt-0.5">{fmtMoney(portfolio.cashBalance)}</Text>
+                <Text className="font-mono text-ink dark:text-inkDark mt-0.5">{fmtMoney(portfolio.cashBalance)}</Text>
               </View>
               <View>
                 <Text className="text-muted dark:text-mutedDark text-xs">Saldo inicial</Text>
-                <Text className="text-ink dark:text-inkDark font-medium mt-0.5">{fmtMoney(portfolio.startingBalance)}</Text>
+                <Text className="font-mono text-ink dark:text-inkDark mt-0.5">{fmtMoney(portfolio.startingBalance)}</Text>
               </View>
             </View>
           </Card>
 
-          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Operar</Text>
+          <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Operar</Text>
           <Text className="text-muted dark:text-mutedDark text-xs mb-2">
             Toda operación empieza con un plan: por qué entras, qué riesgo ves y dónde sales. Sin plan no hay orden.
           </Text>
           <View className="flex-row gap-2">
             <Pressable className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=buy`)}>
-              <View className="bg-primary rounded-xl py-3.5 items-center">
-                <Text className="text-white font-semibold">Comprar con plan</Text>
+              <View className="bg-primary dark:bg-primaryDark rounded-xl py-3.5 items-center">
+                <Text className="font-sans-bold text-white">Comprar con plan</Text>
               </View>
             </Pressable>
             <Pressable className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=sell`)}>
-              <View className="border border-primary rounded-xl py-3.5 items-center">
-                <Text className="text-primary dark:text-primaryDark font-semibold">Vender con plan</Text>
+              <View className="border border-primary dark:border-primaryDark rounded-xl py-3.5 items-center">
+                <Text className="font-sans-bold text-primary dark:text-primaryDark">Vender con plan</Text>
               </View>
             </Pressable>
           </View>
 
-          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Posiciones</Text>
+          <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Posiciones</Text>
           {portfolio.positions.length === 0 ? (
             <Card>
               <Text className="text-muted dark:text-mutedDark text-sm">Sin posiciones abiertas todavía.</Text>
@@ -96,14 +96,14 @@ export default function PortfolioDetailScreen() {
                 <Pressable key={pos.ticker} onPress={() => router.push(`/company/${pos.ticker}`)}>
                   <Card className="flex-row items-center justify-between">
                     <View className="flex-1 pr-3">
-                      <Text className="text-ink dark:text-inkDark font-semibold">{pos.ticker}</Text>
-                      <Text className="text-muted dark:text-mutedDark text-xs mt-0.5">
+                      <Text className="font-sans-bold text-ink dark:text-inkDark">{pos.ticker}</Text>
+                      <Text className="font-mono text-muted dark:text-mutedDark text-xs mt-0.5">
                         {pos.quantity} acciones · coste medio {fmtMoney(pos.avgCostBasis)}
                       </Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-ink dark:text-inkDark font-medium">{fmtMoney(pos.marketValue)}</Text>
-                      <Text className={pos.unrealizedPnlPct >= 0 ? "text-positive dark:text-positiveDark text-xs" : "text-negative dark:text-negativeDark text-xs"}>
+                      <Text className="font-mono-bold text-ink dark:text-inkDark">{fmtMoney(pos.marketValue)}</Text>
+                      <Text className={cn("font-mono text-xs", pos.unrealizedPnlPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
                         {fmtPct(pos.unrealizedPnlPct)}
                       </Text>
                     </View>
@@ -113,7 +113,7 @@ export default function PortfolioDetailScreen() {
             </View>
           )}
 
-          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Historial de órdenes</Text>
+          <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Historial de órdenes</Text>
           {!orders || orders.length === 0 ? (
             <Card>
               <Text className="text-muted dark:text-mutedDark text-sm">Sin órdenes todavía.</Text>
@@ -123,20 +123,20 @@ export default function PortfolioDetailScreen() {
               {orders.map((o) => (
                 <Card key={o.id} className="flex-row items-center justify-between">
                   <View>
-                    <Text className="text-ink dark:text-inkDark font-medium">
+                    <Text className="font-sans-bold text-ink dark:text-inkDark">
                       <Text className={o.side === "buy" ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark"}>
                         {o.side === "buy" ? "Compra" : "Venta"}
                       </Text>{" "}
                       {o.ticker}
                     </Text>
-                    <Text className="text-muted dark:text-mutedDark text-xs mt-0.5">
+                    <Text className="font-mono text-muted dark:text-mutedDark text-xs mt-0.5">
                       {o.quantity} @ {fmtMoney(o.price)}
                     </Text>
                   </View>
                   <View className="items-end">
                     <Text className="text-muted dark:text-mutedDark text-xs">{new Date(o.executedAt).toLocaleDateString()}</Text>
                     {o.realizedPnlPct !== undefined ? (
-                      <Text className={o.realizedPnlPct >= 0 ? "text-positive dark:text-positiveDark text-xs mt-0.5" : "text-negative dark:text-negativeDark text-xs mt-0.5"}>
+                      <Text className={cn("font-mono text-xs mt-0.5", o.realizedPnlPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
                         {fmtPct(o.realizedPnlPct)} realizado
                       </Text>
                     ) : null}
@@ -148,10 +148,10 @@ export default function PortfolioDetailScreen() {
 
           <View className="flex-row gap-2 mt-6">
             <Pressable onPress={confirmReset} className="flex-1 border border-border dark:border-borderDark rounded-xl py-3 items-center">
-              <Text className="text-ink dark:text-inkDark font-medium">Resetear</Text>
+              <Text className="font-sans-semibold text-ink dark:text-inkDark">Resetear</Text>
             </Pressable>
             <Pressable onPress={confirmDelete} className="flex-1 border border-negative dark:border-negativeDark rounded-xl py-3 items-center">
-              <Text className="text-negative dark:text-negativeDark font-medium">Eliminar</Text>
+              <Text className="font-sans-semibold text-negative dark:text-negativeDark">Eliminar</Text>
             </Pressable>
           </View>
         </ScrollView>

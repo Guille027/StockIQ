@@ -2,11 +2,14 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "nativewind";
 import { useCoachReview, useProfile } from "@/api/hooks";
 import { ApiError } from "@/api/client";
 import { Card } from "@/components/Card";
 import { CoachFeedbackCard } from "@/components/CoachFeedbackCard";
+import { XpBar } from "@/components/XpBar";
+import { StreakFlame } from "@/components/StreakFlame";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { cn } from "@/utils/cn";
@@ -22,6 +25,11 @@ const KIND_LABELS: Record<string, string> = {
   streak: "Racha diaria",
 };
 
+// The rank card is the ONE place in the app that breaks from the flat
+// paper/surface palette -- a brand gradient, so it reads as "the achievements
+// screen of a game" rather than another list item.
+const GRADIENT = { light: ["#5B5BD6", "#476BB8"] as const, dark: ["#8B89EE", "#799DDB"] as const };
+
 export default function ProfileScreen() {
   const { data, isLoading, isError, refetch } = useProfile();
   const review = useCoachReview();
@@ -36,46 +44,45 @@ export default function ProfileScreen() {
       {data ? (
         <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
           <View className="flex-row items-center justify-between mt-2 mb-4">
-            <Text className="text-2xl font-bold text-ink dark:text-inkDark">Perfil</Text>
+            <Text className="font-display text-2xl text-ink dark:text-inkDark">Perfil</Text>
             <Pressable onPress={() => router.push("/settings")} hitSlop={8}>
-              <Ionicons name="settings-outline" size={22} color={isDark ? "#98A0AA" : "#77716A"} />
+              <Ionicons name="settings-outline" size={22} color={isDark ? "#999CB0" : "#6D7086"} />
             </Pressable>
           </View>
 
-          <Card>
-            <Text className="text-muted dark:text-mutedDark text-xs">Rango {data.rank}</Text>
-            <Text className="text-ink dark:text-inkDark text-xl font-bold mt-0.5">{data.rankName}</Text>
-            <View className="h-2.5 bg-surface dark:bg-surfaceDark rounded-full mt-3 overflow-hidden">
-              <View
-                className="h-2.5 bg-primary dark:bg-primaryDark rounded-full"
-                style={{ width: `${data.xpForNextRank ? Math.min(100, (data.xpIntoRank / data.xpForNextRank) * 100) : 100}%` }}
-              />
+          <LinearGradient
+            colors={isDark ? GRADIENT.dark : GRADIENT.light}
+            start={{ x: 0.1, y: 0 }}
+            end={{ x: 0.9, y: 1 }}
+            style={{ borderRadius: 20, padding: 20, overflow: "hidden" }}
+          >
+            <View className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/10" />
+            <Text className="font-mono text-white/75 text-[11px] tracking-wide">RANGO {data.rank}</Text>
+            <Text className="font-display text-white text-2xl mt-1">{data.rankName}</Text>
+            <View className="mt-4">
+              <XpBar xpIntoRank={data.xpIntoRank} xpForNextRank={data.xpForNextRank} variant="onBrand" />
             </View>
-            <Text className="text-muted dark:text-mutedDark text-xs mt-1.5">
-              {data.xpForNextRank !== undefined
-                ? `${data.xpIntoRank} / ${data.xpForNextRank} XP para el siguiente rango`
-                : "Rango máximo alcanzado"}
-              {"  ·  "}
-              {data.xpTotal} XP en total
-            </Text>
-          </Card>
+          </LinearGradient>
 
           <View className="flex-row gap-2 mt-3">
-            <Card className="flex-1 items-center py-3">
-              <Text className="text-lg font-bold text-ink dark:text-inkDark">🔥 {data.currentStreak}</Text>
-              <Text className="text-muted dark:text-mutedDark text-[11px] mt-0.5">Racha actual</Text>
+            <Card className="flex-1 items-center py-3.5">
+              <View className="flex-row items-center gap-1.5">
+                <StreakFlame size={16} />
+                <Text className="font-mono-bold text-ink dark:text-inkDark text-lg">{data.currentStreak}</Text>
+              </View>
+              <Text className="text-muted dark:text-mutedDark text-[11px] mt-1">Racha actual</Text>
             </Card>
-            <Card className="flex-1 items-center py-3">
-              <Text className="text-lg font-bold text-ink dark:text-inkDark">{data.lessonsCompleted}</Text>
-              <Text className="text-muted dark:text-mutedDark text-[11px] mt-0.5">Lecciones</Text>
+            <Card className="flex-1 items-center py-3.5">
+              <Text className="font-mono-bold text-ink dark:text-inkDark text-lg">{data.lessonsCompleted}</Text>
+              <Text className="text-muted dark:text-mutedDark text-[11px] mt-1">Lecciones</Text>
             </Card>
-            <Card className="flex-1 items-center py-3">
-              <Text className="text-lg font-bold text-ink dark:text-inkDark">{data.tradesPlanned}</Text>
-              <Text className="text-muted dark:text-mutedDark text-[11px] mt-0.5">Planes de trade</Text>
+            <Card className="flex-1 items-center py-3.5">
+              <Text className="font-mono-bold text-ink dark:text-inkDark text-lg">{data.tradesPlanned}</Text>
+              <Text className="text-muted dark:text-mutedDark text-[11px] mt-1">Planes de trade</Text>
             </Card>
           </View>
 
-          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Revisión del mentor</Text>
+          <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Revisión del mentor</Text>
           {review.data ? (
             <CoachFeedbackCard feedback={review.data.feedback} />
           ) : (
@@ -86,9 +93,9 @@ export default function ProfileScreen() {
               <Pressable
                 onPress={() => review.mutate()}
                 disabled={review.isPending}
-                className={cn("rounded-xl py-3 items-center", review.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary")}
+                className={cn("rounded-xl py-3 items-center", review.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
               >
-                <Text className={cn("font-semibold", review.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
+                <Text className={cn("font-sans-bold", review.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
                   {review.isPending ? "Revisando tus operaciones..." : "🧑‍🏫 Pedir revisión"}
                 </Text>
               </Pressable>
@@ -100,7 +107,7 @@ export default function ProfileScreen() {
             </Card>
           )}
 
-          <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Actividad reciente</Text>
+          <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Actividad reciente</Text>
           {data.recentEvents.length === 0 ? (
             <Card>
               <Text className="text-muted dark:text-mutedDark text-sm">
@@ -112,10 +119,10 @@ export default function ProfileScreen() {
               {data.recentEvents.map((e) => (
                 <Card key={e.id} className="flex-row items-center justify-between py-3">
                   <View className="flex-1 pr-2">
-                    <Text className="text-ink dark:text-inkDark text-sm font-medium">{KIND_LABELS[e.kind] ?? e.kind}</Text>
+                    <Text className="font-sans-semibold text-ink dark:text-inkDark text-sm">{KIND_LABELS[e.kind] ?? e.kind}</Text>
                     <Text className="text-muted dark:text-mutedDark text-[11px] mt-0.5">{new Date(e.createdAt).toLocaleDateString()}</Text>
                   </View>
-                  <Text className="text-accent dark:text-accentDark font-semibold text-sm">+{e.amount} XP</Text>
+                  <Text className="font-mono-bold text-accent dark:text-accentDark text-sm">+{e.amount} XP</Text>
                 </Card>
               ))}
             </View>

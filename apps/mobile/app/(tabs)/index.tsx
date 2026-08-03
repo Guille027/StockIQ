@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import type { RoadmapLesson, RoadmapLevel } from "@stockiq/shared-types";
@@ -6,6 +6,9 @@ import { useProfile, useRoadmap } from "@/api/hooks";
 import { Card } from "@/components/Card";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { LessonIcon } from "@/components/LessonIcon";
+import { StreakFlame } from "@/components/StreakFlame";
+import { PressableScale } from "@/components/PressableScale";
 import { cn } from "@/utils/cn";
 
 /** Aprender: the Duolingo-style level path. This is the app's identity now. */
@@ -21,16 +24,17 @@ export default function LearnScreen() {
       {data ? (
         <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
           <View className="flex-row items-center justify-between mt-2">
-            <Text className="text-2xl font-bold text-ink dark:text-inkDark">Aprender</Text>
+            <Text className="font-display text-2xl text-ink dark:text-inkDark">Aprender</Text>
             {profile ? (
               <View className="flex-row items-center gap-2">
                 {profile.currentStreak > 0 ? (
-                  <View className="flex-row items-center bg-accent/15 px-2.5 py-1 rounded-full">
-                    <Text className="text-accent dark:text-accentDark text-xs font-semibold">🔥 {profile.currentStreak}</Text>
+                  <View className="flex-row items-center gap-1.5 bg-accentSoft dark:bg-accentSoftDark px-2.5 py-1 rounded-full">
+                    <StreakFlame size={14} />
+                    <Text className="font-mono-bold text-accent dark:text-accentDark text-xs">{profile.currentStreak}</Text>
                   </View>
                 ) : null}
-                <View className="bg-primary/10 px-2.5 py-1 rounded-full">
-                  <Text className="text-primary dark:text-primaryDark text-xs font-semibold">{profile.xpTotal} XP</Text>
+                <View className="bg-primarySoft dark:bg-primarySoftDark px-2.5 py-1 rounded-full">
+                  <Text className="font-mono-bold text-primary dark:text-primaryDark text-xs">{profile.xpTotal} XP</Text>
                 </View>
               </View>
             ) : null}
@@ -57,12 +61,18 @@ function LevelSection({ level }: { level: RoadmapLevel }) {
       <View className="flex-row items-center gap-2 mb-2">
         <Text className={cn("text-xl", locked && "opacity-40")}>{level.icon}</Text>
         <View className="flex-1">
-          <Text className={cn("font-bold text-ink dark:text-inkDark", locked && "opacity-40")}>
+          <Text className={cn("font-sans-bold text-ink dark:text-inkDark text-[15px]", locked && "opacity-40")}>
             Nivel {level.order} · {level.title}
           </Text>
         </View>
-        {level.status === "completed" ? <Text className="text-positive dark:text-positiveDark text-xs font-semibold">✓ Completado</Text> : null}
-        {locked ? <Text className="text-muted dark:text-mutedDark text-xs">🔒</Text> : null}
+        {level.status === "completed" ? (
+          <Text className="font-sans-bold text-positive dark:text-positiveDark text-xs">✓ Completado</Text>
+        ) : null}
+        {locked ? (
+          <View className="w-5 h-5 items-center justify-center opacity-50">
+            <Text style={{ fontSize: 13 }}>🔒</Text>
+          </View>
+        ) : null}
       </View>
       <Text className={cn("text-muted dark:text-mutedDark text-xs mb-2", locked && "opacity-60")}>{level.description}</Text>
 
@@ -86,24 +96,23 @@ function LevelSection({ level }: { level: RoadmapLevel }) {
 function LessonRow({ lesson }: { lesson: RoadmapLesson }) {
   const done = lesson.status === "completed";
   return (
-    <Pressable onPress={() => router.push(`/lesson/${lesson.id}`)}>
+    <PressableScale onPress={() => router.push(`/lesson/${lesson.id}`)}>
       <Card className="flex-row items-center gap-3">
-        <View
-          className={cn(
-            "w-9 h-9 rounded-full items-center justify-center",
-            done ? "bg-positive/15" : "bg-primary/10",
-          )}
-        >
-          <Text className="text-base">{done ? "✅" : "📘"}</Text>
-        </View>
+        <LessonIcon status={done ? "completed" : "available"} />
         <View className="flex-1">
-          <Text className="text-ink dark:text-inkDark font-medium">{lesson.title}</Text>
+          <Text className="font-sans-bold text-ink dark:text-inkDark text-[14.5px]">{lesson.title}</Text>
           <Text className="text-muted dark:text-mutedDark text-xs mt-0.5" numberOfLines={1}>
-            {done && lesson.bestScorePct !== undefined ? `Mejor puntuación: ${Math.round(lesson.bestScorePct)}%` : `${lesson.estimatedMinutes} min · ${lesson.description}`}
+            {done && lesson.bestScorePct !== undefined ? (
+              <>
+                Mejor puntuación: <Text className="font-mono text-muted dark:text-mutedDark text-xs">{Math.round(lesson.bestScorePct)}%</Text>
+              </>
+            ) : (
+              `${lesson.estimatedMinutes} min · ${lesson.description}`
+            )}
           </Text>
         </View>
         <Text className="text-muted dark:text-mutedDark">›</Text>
       </Card>
-    </Pressable>
+    </PressableScale>
   );
 }

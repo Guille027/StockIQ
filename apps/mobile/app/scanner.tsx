@@ -67,7 +67,7 @@ export default function ScannerScreen() {
             <View className="flex-row gap-2">
               {(companiesData?.sectors ?? []).map((s) => (
                 <Pressable key={s} onPress={() => setSector(sector === s ? null : s)}>
-                  <View className={cn("px-3 py-1.5 rounded-full border", sector === s ? "bg-primary border-primary" : "border-border dark:border-borderDark")}>
+                  <View className={cn("px-3 py-1.5 rounded-full border", sector === s ? "bg-primary dark:bg-primaryDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                     <Text className={sector === s ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>{s}</Text>
                   </View>
                 </Pressable>
@@ -77,19 +77,19 @@ export default function ScannerScreen() {
 
           <View className="flex-row gap-2 mb-4">
             <Pressable onPress={() => setInsiderBuyingOnly((v) => !v)} className="flex-1">
-              <View className={cn("px-3 py-2 rounded-xl border items-center", insiderBuyingOnly ? "bg-primary border-primary" : "border-border dark:border-borderDark")}>
+              <View className={cn("px-3 py-2 rounded-xl border items-center", insiderBuyingOnly ? "bg-primary dark:bg-primaryDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                 <Text className={insiderBuyingOnly ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>Insider buying</Text>
               </View>
             </Pressable>
             <Pressable onPress={() => setPositiveNewsOnly((v) => !v)} className="flex-1">
-              <View className={cn("px-3 py-2 rounded-xl border items-center", positiveNewsOnly ? "bg-primary border-primary" : "border-border dark:border-borderDark")}>
+              <View className={cn("px-3 py-2 rounded-xl border items-center", positiveNewsOnly ? "bg-primary dark:bg-primaryDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                 <Text className={positiveNewsOnly ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>Noticias positivas</Text>
               </View>
             </Pressable>
           </View>
 
           <Pressable onPress={runScan} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
-            <Text className="text-white font-semibold">Buscar</Text>
+            <Text className="font-sans-bold text-white">Buscar</Text>
           </Pressable>
         </Card>
 
@@ -98,13 +98,13 @@ export default function ScannerScreen() {
 
         {data ? (
           <View className="mt-4">
-            <Text className="text-muted dark:text-mutedDark text-sm mb-2">{data.count} resultados</Text>
+            <Text className="font-mono text-muted dark:text-mutedDark text-sm mb-2">{data.count} resultados</Text>
             <View className="gap-2">
               {data.results.map((row) => (
                 <Pressable key={row.ticker} onPress={() => router.push(`/company/${row.ticker}`)}>
                   <Card className="flex-row items-center justify-between">
                     <View className="flex-1 pr-3">
-                      <Text className="text-ink dark:text-inkDark font-semibold">
+                      <Text className="font-sans-bold text-ink dark:text-inkDark">
                         {row.ticker} <Text className="text-muted dark:text-mutedDark font-normal">· {row.sector}</Text>
                       </Text>
                       <Text className="text-muted dark:text-mutedDark text-xs mt-0.5" numberOfLines={1}>

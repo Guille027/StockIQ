@@ -62,7 +62,7 @@ export default function JournalEntryScreen() {
             <>
               <Card>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-ink dark:text-inkDark font-bold text-lg">
+                  <Text className="font-display text-ink dark:text-inkDark text-lg">
                     {entry.content.side === "buy" ? "Compra" : "Venta"} · {entry.ticker}
                   </Text>
                   {entry.content.emotion ? (
@@ -72,11 +72,11 @@ export default function JournalEntryScreen() {
                     </View>
                   ) : null}
                 </View>
-                <Text className="text-muted dark:text-mutedDark text-xs mt-1">
+                <Text className="font-mono text-muted dark:text-mutedDark text-xs mt-1">
                   {entry.content.quantity} acciones @ ${entry.content.price?.toFixed(2)} · {new Date(entry.createdAt).toLocaleString()}
                 </Text>
                 {entry.content.resultPct !== undefined ? (
-                  <Text className={cn("text-sm font-semibold mt-2", entry.content.resultPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
+                  <Text className={cn("font-mono-bold text-sm mt-2", entry.content.resultPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
                     Resultado realizado: {entry.content.resultPct >= 0 ? "+" : ""}
                     {(entry.content.resultPct * 100).toFixed(2)}%
                   </Text>
@@ -85,15 +85,15 @@ export default function JournalEntryScreen() {
 
               {plan ? (
                 <>
-                  <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Tu plan al operar</Text>
+                  <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Tu plan al operar</Text>
                   <Card className="gap-3">
                     <PlanItem label="¿Por qué?" text={plan.reason} />
                     <PlanItem label="¿Qué esperabas?" text={plan.expectation} />
                     <PlanItem label="Riesgo que veías" text={plan.riskNoted} />
                     <PlanItem label="Salida si te equivocabas" text={plan.exitPlan} />
                     <View className="flex-row gap-4">
-                      {plan.stopPrice ? <Text className="text-muted dark:text-mutedDark text-xs">Stop: ${plan.stopPrice}</Text> : null}
-                      <Text className="text-muted dark:text-mutedDark text-xs">Tamaño: {plan.portfolioPct.toFixed(1)}% de la cartera</Text>
+                      {plan.stopPrice ? <Text className="font-mono text-muted dark:text-mutedDark text-xs">Stop: ${plan.stopPrice}</Text> : null}
+                      <Text className="font-mono text-muted dark:text-mutedDark text-xs">Tamaño: {plan.portfolioPct.toFixed(1)}% de la cartera</Text>
                     </View>
                   </Card>
                 </>
@@ -108,12 +108,12 @@ export default function JournalEntryScreen() {
 
           {isSell ? (
             <>
-              <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Feedback del mentor</Text>
+              <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Feedback del mentor</Text>
               {coach.data ? (
                 <>
                   {requestCoach.data && requestCoach.data.xpAwarded > 0 ? (
-                    <View className="bg-accent/15 px-3 py-2 rounded-lg mb-2 self-start">
-                      <Text className="text-accent dark:text-accentDark text-xs font-bold">+{requestCoach.data.xpAwarded} XP por revisar tu operación</Text>
+                    <View className="bg-accentSoft dark:bg-accentSoftDark px-3 py-2 rounded-lg mb-2 self-start">
+                      <Text className="font-mono-bold text-accent dark:text-accentDark text-xs">+{requestCoach.data.xpAwarded} XP por revisar tu operación</Text>
                     </View>
                   ) : null}
                   <CoachFeedbackCard feedback={coach.data.feedback} />
@@ -126,9 +126,9 @@ export default function JournalEntryScreen() {
                   <Pressable
                     onPress={() => requestCoach.mutate()}
                     disabled={requestCoach.isPending}
-                    className={cn("rounded-xl py-3 items-center", requestCoach.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary")}
+                    className={cn("rounded-xl py-3 items-center", requestCoach.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
                   >
-                    <Text className={cn("font-semibold", requestCoach.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
+                    <Text className={cn("font-sans-bold", requestCoach.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
                       {requestCoach.isPending ? "Analizando tu operación..." : "🧑‍🏫 Pedir feedback del mentor"}
                     </Text>
                   </Pressable>
@@ -142,11 +142,11 @@ export default function JournalEntryScreen() {
 
           {entry.kind === "trade" ? (
             <>
-              <Text className="text-ink dark:text-inkDark font-semibold mt-5 mb-2">Reflexión posterior</Text>
+              <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Reflexión posterior</Text>
 
               {savedXp !== null && savedXp > 0 ? (
-                <View className="bg-accent/15 px-3 py-2 rounded-lg mb-2 self-start">
-                  <Text className="text-accent dark:text-accentDark text-xs font-bold">+{savedXp} XP por reflexionar</Text>
+                <View className="bg-accentSoft dark:bg-accentSoftDark px-3 py-2 rounded-lg mb-2 self-start">
+                  <Text className="font-mono-bold text-accent dark:text-accentDark text-xs">+{savedXp} XP por reflexionar</Text>
                 </View>
               ) : null}
 
@@ -155,7 +155,7 @@ export default function JournalEntryScreen() {
                   <Text className="text-ink dark:text-inkDark text-sm leading-5">{entry.content.reflection}</Text>
                   {entry.content.mistakes?.length ? (
                     <>
-                      <Text className="text-negative dark:text-negativeDark text-xs font-semibold mt-3 mb-1">Errores detectados</Text>
+                      <Text className="font-sans-bold text-negative dark:text-negativeDark text-xs mt-3 mb-1">Errores detectados</Text>
                       {entry.content.mistakes.map((m, i) => (
                         <Text key={i} className="text-ink dark:text-inkDark text-sm">• {m}</Text>
                       ))}
@@ -163,7 +163,7 @@ export default function JournalEntryScreen() {
                   ) : null}
                   {entry.content.learnings?.length ? (
                     <>
-                      <Text className="text-positive dark:text-positiveDark text-xs font-semibold mt-3 mb-1">Aprendizajes</Text>
+                      <Text className="font-sans-bold text-positive dark:text-positiveDark text-xs mt-3 mb-1">Aprendizajes</Text>
                       {entry.content.learnings.map((l, i) => (
                         <Text key={i} className="text-ink dark:text-inkDark text-sm">• {l}</Text>
                       ))}
@@ -182,8 +182,8 @@ export default function JournalEntryScreen() {
                       ? "La operación está cerrada. ¿Qué pasó comparado con tu plan? Aquí es donde de verdad se aprende."
                       : "Puedes escribir una reflexión en cualquier momento -- por ejemplo, si la tesis cambió desde que compraste."}
                   </Text>
-                  <Pressable onPress={startEditing} className="bg-primary rounded-xl py-3 items-center">
-                    <Text className="text-white font-semibold">Escribir reflexión</Text>
+                  <Pressable onPress={startEditing} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
+                    <Text className="font-sans-bold text-white">Escribir reflexión</Text>
                   </Pressable>
                 </Card>
               ) : null}
@@ -223,9 +223,9 @@ export default function JournalEntryScreen() {
                   <Pressable
                     onPress={submit}
                     disabled={reflection.trim().length < 10 || saveReflection.isPending}
-                    className={cn("rounded-xl py-3 items-center", reflection.trim().length < 10 || saveReflection.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary")}
+                    className={cn("rounded-xl py-3 items-center", reflection.trim().length < 10 || saveReflection.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
                   >
-                    <Text className={cn("font-semibold", reflection.trim().length < 10 || saveReflection.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
+                    <Text className={cn("font-sans-bold", reflection.trim().length < 10 || saveReflection.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
                       {saveReflection.isPending ? "Guardando..." : "Guardar reflexión"}
                     </Text>
                   </Pressable>

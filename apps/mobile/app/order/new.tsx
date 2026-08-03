@@ -86,17 +86,17 @@ export default function NewOrderScreen() {
     return (
       <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark items-center justify-center px-6">
         <Text className="text-5xl mb-4">📝</Text>
-        <Text className="text-ink dark:text-inkDark text-xl font-bold text-center">Operación registrada con plan</Text>
+        <Text className="font-display text-ink dark:text-inkDark text-xl text-center">Operación registrada con plan</Text>
         <Text className="text-muted dark:text-mutedDark text-sm text-center mt-2">
           Lo importante no es si esta operación sale bien o mal: es que la decidiste con un proceso. Tu plan queda guardado en el diario.
         </Text>
         {success.xpAwarded > 0 ? (
-          <View className="bg-accent/15 px-4 py-2 rounded-full mt-4">
-            <Text className="text-accent dark:text-accentDark font-bold">+{success.xpAwarded} XP por planificar</Text>
+          <View className="bg-accentSoft dark:bg-accentSoftDark px-4 py-2 rounded-full mt-4">
+            <Text className="font-mono-bold text-accent dark:text-accentDark">+{success.xpAwarded} XP por planificar</Text>
           </View>
         ) : null}
-        <Pressable className="bg-primary rounded-xl px-8 py-3.5 mt-8" onPress={() => router.back()}>
-          <Text className="text-white font-semibold">Volver a la cartera</Text>
+        <Pressable className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={() => router.back()}>
+          <Text className="font-sans-bold text-white">Volver a la cartera</Text>
         </Pressable>
         <Pressable className="mt-3" onPress={() => router.replace("/(tabs)/journal")}>
           <Text className="text-primary dark:text-primaryDark text-sm">Ver en tu diario</Text>
@@ -124,13 +124,13 @@ export default function NewOrderScreen() {
           <ScrollView className="flex-1 mt-4" contentContainerStyle={{ paddingBottom: 16 }} keyboardShouldPersistTaps="handled">
             {step === 0 ? (
               <View>
-                <Text className="text-ink dark:text-inkDark text-xl font-bold mb-4">{side === "buy" ? "¿Qué quieres comprar?" : "¿Qué quieres vender?"}</Text>
+                <Text className="text-ink dark:text-inkDark font-display text-xl mb-4">{side === "buy" ? "¿Qué quieres comprar?" : "¿Qué quieres vender?"}</Text>
 
                 <View className="flex-row gap-2 mb-4">
                   {(["buy", "sell"] as const).map((s) => (
                     <Pressable key={s} className="flex-1" onPress={() => setSide(s)}>
-                      <View className={cn("py-2.5 rounded-xl items-center border", side === s ? "bg-primary/10 border-primary" : "border-border dark:border-borderDark")}>
-                        <Text className={cn("text-sm font-medium", side === s ? "text-primary dark:text-primaryDark" : "text-muted dark:text-mutedDark")}>
+                      <View className={cn("py-2.5 rounded-xl items-center border", side === s ? "bg-primarySoft dark:bg-primarySoftDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
+                        <Text className={cn("text-sm font-sans-semibold", side === s ? "text-primary dark:text-primaryDark" : "text-muted dark:text-mutedDark")}>
                           {s === "buy" ? "Comprar" : "Vender"}
                         </Text>
                       </View>
@@ -191,7 +191,7 @@ export default function NewOrderScreen() {
                 {portfolioPct !== undefined ? (
                   <Card className="mt-4">
                     <Text className="text-muted dark:text-mutedDark text-xs">
-                      Esta orden representa el <Text className="font-bold text-ink dark:text-inkDark">{portfolioPct.toFixed(1)}%</Text> de tu cartera
+                      Esta orden representa el <Text className="font-mono-bold text-ink dark:text-inkDark">{portfolioPct.toFixed(1)}%</Text> de tu cartera
                       {estValue !== undefined ? ` (~$${estValue.toFixed(2)})` : ""}.
                     </Text>
                     {portfolioPct > 20 ? (
@@ -206,7 +206,7 @@ export default function NewOrderScreen() {
 
             {step === 1 ? (
               <View>
-                <Text className="text-ink dark:text-inkDark text-xl font-bold mb-1">Tu plan</Text>
+                <Text className="font-display text-ink dark:text-inkDark text-xl mb-1">Tu plan</Text>
                 <Text className="text-muted dark:text-mutedDark text-xs mb-4">
                   Responder esto ANTES de operar es lo que separa invertir de apostar. Mínimo unas palabras por respuesta.
                 </Text>
@@ -239,14 +239,14 @@ export default function NewOrderScreen() {
 
             {step === 2 ? (
               <View>
-                <Text className="text-ink dark:text-inkDark text-xl font-bold mb-1">¿Cómo te sientes ahora mismo?</Text>
+                <Text className="font-display text-ink dark:text-inkDark text-xl mb-1">¿Cómo te sientes ahora mismo?</Text>
                 <Text className="text-muted dark:text-mutedDark text-xs mb-4">
                   Sin juicio. Conocer tu estado emocional al operar es una de las herramientas más potentes que existen.
                 </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {EMOTIONAL_STATES.map((e) => (
                     <Pressable key={e} onPress={() => setEmotion(e)}>
-                      <View className={cn("flex-row items-center gap-1.5 px-3.5 py-2.5 rounded-full border", emotion === e ? "bg-primary/10 border-primary" : "border-border dark:border-borderDark")}>
+                      <View className={cn("flex-row items-center gap-1.5 px-3.5 py-2.5 rounded-full border", emotion === e ? "bg-primarySoft dark:bg-primarySoftDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                         <Text>{EMOTION_LABELS[e].emoji}</Text>
                         <Text className={cn("text-sm", emotion === e ? "text-primary dark:text-primaryDark font-medium" : "text-ink dark:text-inkDark")}>
                           {EMOTION_LABELS[e].label}
@@ -256,7 +256,7 @@ export default function NewOrderScreen() {
                   ))}
                 </View>
                 {emotion && ALERT_EMOTIONS.includes(emotion) ? (
-                  <Card className="mt-4 border-accent">
+                  <Card className="mt-4 border-accent dark:border-accentDark">
                     <Text className="text-ink dark:text-inkDark text-sm">
                       Respira. {EMOTION_LABELS[emotion].label} es una de las emociones que más operaciones malas provoca. ¿Tu plan sigue teniendo sentido si el precio no se mueve en una semana?
                     </Text>
@@ -267,7 +267,7 @@ export default function NewOrderScreen() {
 
             {step === 3 ? (
               <View>
-                <Text className="text-ink dark:text-inkDark text-xl font-bold mb-4">Confirma tu operación</Text>
+                <Text className="font-display text-ink dark:text-inkDark text-xl mb-4">Confirma tu operación</Text>
                 <Card>
                   <Row label="Operación" value={`${side === "buy" ? "Comprar" : "Vender"} ${ticker}`} />
                   <Row label={inputMode === "shares" ? "Acciones" : "Importe"} value={inputMode === "shares" ? String(numericValue) : `$${numericValue}`} />
@@ -287,11 +287,11 @@ export default function NewOrderScreen() {
           </ScrollView>
 
           <Pressable
-            className={cn("rounded-xl py-3.5 items-center mb-4", !stepValid() || placeOrder.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary")}
+            className={cn("rounded-xl py-3.5 items-center mb-4", !stepValid() || placeOrder.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
             disabled={!stepValid() || placeOrder.isPending}
             onPress={() => (step === 3 ? submit() : setStep((s) => s + 1))}
           >
-            <Text className={cn("font-semibold", !stepValid() || placeOrder.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
+            <Text className={cn("font-sans-bold", !stepValid() || placeOrder.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
               {placeOrder.isPending ? "Ejecutando..." : step === 3 ? `${side === "buy" ? "Comprar" : "Vender"} con plan` : "Continuar"}
             </Text>
           </Pressable>
@@ -305,7 +305,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row justify-between py-1.5">
       <Text className="text-muted dark:text-mutedDark text-sm">{label}</Text>
-      <Text className="text-ink dark:text-inkDark text-sm font-medium">{value}</Text>
+      <Text className="font-mono text-ink dark:text-inkDark text-sm">{value}</Text>
     </View>
   );
 }

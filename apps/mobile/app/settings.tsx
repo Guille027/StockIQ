@@ -22,24 +22,24 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={[]}>
       <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32, paddingTop: 16 }}>
-        <Text className="text-ink dark:text-inkDark font-semibold mb-2">Apariencia</Text>
+        <Text className="font-sans-bold text-ink dark:text-inkDark mb-2">Apariencia</Text>
         <Card className="flex-row gap-2 mb-4">
           {THEME_OPTIONS.map((opt) => (
             <Pressable key={opt.key} className="flex-1" onPress={() => setColorScheme(opt.key)}>
-              <View className={cn("py-2 rounded-lg items-center", colorScheme === opt.key ? "bg-primary" : "bg-surface dark:bg-surfaceDark")}>
-                <Text className={colorScheme === opt.key ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>{opt.label}</Text>
+              <View className={cn("py-2 rounded-lg items-center", colorScheme === opt.key ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")}>
+                <Text className={colorScheme === opt.key ? "font-sans-semibold text-white text-xs" : "text-ink dark:text-inkDark text-xs"}>{opt.label}</Text>
               </View>
             </Pressable>
           ))}
         </Card>
 
-        <Text className="text-ink dark:text-inkDark font-semibold mb-2">Próximamente</Text>
+        <Text className="font-sans-bold text-ink dark:text-inkDark mb-2">Próximamente</Text>
         <View className="gap-2 mb-6">
           {UPCOMING.map((item) => (
             <Card key={item.title} className="flex-row items-center gap-3">
               <Text className="text-xl">{item.icon}</Text>
               <View className="flex-1">
-                <Text className="text-ink dark:text-inkDark font-medium">{item.title}</Text>
+                <Text className="font-sans-bold text-ink dark:text-inkDark">{item.title}</Text>
                 <Text className="text-muted dark:text-mutedDark text-xs mt-0.5">{item.description}</Text>
               </View>
             </Card>

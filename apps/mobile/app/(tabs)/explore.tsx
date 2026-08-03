@@ -7,6 +7,7 @@ import { Card } from "@/components/Card";
 import { SectionHeader } from "@/components/SectionHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { cn } from "@/utils/cn";
 
 /**
  * Explorar: análisis tools for practicing what you learn. Market overview,
@@ -25,7 +26,7 @@ export default function ExploreScreen() {
       {data ? (
         <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
           <View className="flex-row items-center justify-between mt-2">
-            <Text className="text-2xl font-bold text-ink dark:text-inkDark">Explorar</Text>
+            <Text className="font-display text-2xl text-ink dark:text-inkDark">Explorar</Text>
             <View className="flex-row items-center gap-1.5">
               <View className={`w-2 h-2 rounded-full ${data.marketStatus.isOpen ? "bg-positive" : "bg-muted"}`} />
               <Text className="text-muted dark:text-mutedDark text-xs">{data.marketStatus.label}</Text>
@@ -82,7 +83,7 @@ export default function ExploreScreen() {
           </Pressable>
 
           <Card className="mt-3">
-            <Text className="text-ink dark:text-inkDark font-semibold mb-1">{data.dailySummary.headline}</Text>
+            <Text className="font-sans-bold text-ink dark:text-inkDark mb-1">{data.dailySummary.headline}</Text>
             <Text className="text-muted dark:text-mutedDark text-sm leading-5">{data.dailySummary.body}</Text>
           </Card>
 
@@ -92,8 +93,8 @@ export default function ExploreScreen() {
               {data.indices.map((idx) => (
                 <Card key={idx.symbol} className="w-32">
                   <Text className="text-muted dark:text-mutedDark text-xs">{idx.name}</Text>
-                  <Text className="text-ink dark:text-inkDark font-semibold mt-1">{idx.value.toLocaleString()}</Text>
-                  <Text className={idx.changePct >= 0 ? "text-positive dark:text-positiveDark text-xs mt-0.5" : "text-negative dark:text-negativeDark text-xs mt-0.5"}>
+                  <Text className="font-mono-bold text-ink dark:text-inkDark mt-1">{idx.value.toLocaleString()}</Text>
+                  <Text className={cn("font-mono text-xs mt-0.5", idx.changePct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
                     {idx.changePct >= 0 ? "+" : ""}
                     {(idx.changePct * 100).toFixed(2)}%
                   </Text>

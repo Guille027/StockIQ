@@ -24,13 +24,13 @@ export default function JournalScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={["top"]}>
       <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text className="text-2xl font-bold text-ink dark:text-inkDark mt-2 mb-1">Diario</Text>
+        <Text className="font-display text-2xl text-ink dark:text-inkDark mt-2 mb-1">Diario</Text>
         <Text className="text-muted dark:text-mutedDark text-sm mb-3">Tu memoria como inversor: cada operación, tu plan y lo que aprendiste.</Text>
 
         <View className="flex-row gap-2 mb-3">
           {FILTERS.map((f) => (
             <Pressable key={f.label} onPress={() => setKind(f.key)}>
-              <View className={cn("px-3.5 py-1.5 rounded-full border", kind === f.key ? "bg-primary/10 border-primary" : "border-border dark:border-borderDark")}>
+              <View className={cn("px-3.5 py-1.5 rounded-full border", kind === f.key ? "bg-primarySoft dark:bg-primarySoftDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                 <Text className={cn("text-xs", kind === f.key ? "text-primary dark:text-primaryDark font-medium" : "text-muted dark:text-mutedDark")}>{f.label}</Text>
               </View>
             </Pressable>
@@ -38,9 +38,9 @@ export default function JournalScreen() {
         </View>
 
         {pendingReflections > 0 ? (
-          <Card className="mb-3 border-accent">
+          <Card className="mb-3 border-accent dark:border-accentDark">
             <Text className="text-ink dark:text-inkDark text-sm">
-              ✍️ Tienes <Text className="font-bold">{pendingReflections}</Text> {pendingReflections === 1 ? "venta sin reflexión" : "ventas sin reflexión"}. Revisar qué pasó después de cerrar es donde más se aprende (+25 XP).
+              ✍️ Tienes <Text className="font-mono-bold">{pendingReflections}</Text> {pendingReflections === 1 ? "venta sin reflexión" : "ventas sin reflexión"}. Revisar qué pasó después de cerrar es donde más se aprende (+25 XP).
             </Text>
           </Card>
         ) : null}
@@ -51,7 +51,7 @@ export default function JournalScreen() {
         {data && data.length === 0 ? (
           <Card>
             <Text className="text-xl mb-2">📓</Text>
-            <Text className="text-ink dark:text-inkDark font-semibold mb-1">Aún no hay entradas</Text>
+            <Text className="font-sans-bold text-ink dark:text-inkDark mb-1">Aún no hay entradas</Text>
             <Text className="text-muted dark:text-mutedDark text-sm leading-5">
               Cuando hagas tu primera operación en Práctica, tu plan (por qué compras, qué riesgo ves, dónde saldrás) se guardará aquí automáticamente.
             </Text>
@@ -67,14 +67,14 @@ export default function JournalScreen() {
                     <View className="flex-row items-center gap-2 flex-1">
                       {e.kind === "trade" ? (
                         <>
-                          <Text className={cn("text-xs font-semibold", e.content.side === "buy" ? "text-primary dark:text-primaryDark" : "text-ink dark:text-inkDark")}>
+                          <Text className={cn("font-mono-bold text-[11px]", e.content.side === "buy" ? "text-primary dark:text-primaryDark" : "text-ink dark:text-inkDark")}>
                             {e.content.side === "buy" ? "COMPRA" : "VENTA"}
                           </Text>
-                          <Text className="text-ink dark:text-inkDark font-semibold">{e.ticker}</Text>
+                          <Text className="font-sans-bold text-ink dark:text-inkDark">{e.ticker}</Text>
                           {e.content.emotion ? <Text className="text-sm">{EMOTION_LABELS[e.content.emotion].emoji}</Text> : null}
                         </>
                       ) : (
-                        <Text className="text-ink dark:text-inkDark font-semibold">📝 Nota</Text>
+                        <Text className="font-sans-bold text-ink dark:text-inkDark">📝 Nota</Text>
                       )}
                     </View>
                     <Text className="text-muted dark:text-mutedDark text-[11px]">{new Date(e.createdAt).toLocaleDateString()}</Text>
@@ -84,7 +84,7 @@ export default function JournalScreen() {
                   </Text>
                   <View className="flex-row items-center gap-3 mt-1.5">
                     {e.content.resultPct !== undefined ? (
-                      <Text className={e.content.resultPct >= 0 ? "text-positive dark:text-positiveDark text-xs font-medium" : "text-negative dark:text-negativeDark text-xs font-medium"}>
+                      <Text className={cn("font-mono text-xs", e.content.resultPct >= 0 ? "text-positive dark:text-positiveDark" : "text-negative dark:text-negativeDark")}>
                         {e.content.resultPct >= 0 ? "+" : ""}
                         {(e.content.resultPct * 100).toFixed(2)}% realizado
                       </Text>

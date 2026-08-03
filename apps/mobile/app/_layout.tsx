@@ -8,18 +8,22 @@ import { StatusBar } from "expo-status-bar";
 import { useColorScheme as useNativewindColorScheme } from "nativewind";
 import { useColorScheme as useSystemColorScheme } from "react-native";
 import { queryClient } from "@/api/queryClient";
+import { useAppFonts } from "@/theme/fonts";
+import { applyDefaultTextFont } from "@/theme/text-defaults";
 
 export default function RootLayout() {
   const { setColorScheme } = useNativewindColorScheme();
   const systemScheme = useSystemColorScheme();
   const [ready, setReady] = useState(false);
+  const [fontsLoaded] = useAppFonts();
 
   useEffect(() => {
     setColorScheme(systemScheme === "dark" ? "dark" : "light");
     setReady(true);
   }, [systemScheme]);
 
-  if (!ready) return null;
+  if (fontsLoaded) applyDefaultTextFont();
+  if (!ready || !fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -28,6 +32,7 @@ export default function RootLayout() {
           <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="onboarding" />
             <Stack.Screen
               name="company/[ticker]"
               options={{ headerShown: true, headerTitle: "", headerBackTitle: "Atrás" }}
