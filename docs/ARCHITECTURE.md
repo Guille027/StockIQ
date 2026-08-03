@@ -86,7 +86,7 @@ Rangos (`RANK_THRESHOLDS`): 0, 100, 250, 500, 900, 1400, 2100, 3000, 4100,
 5500 XP acumulados → Curioso, Novato, Aprendiz, Observador, Estudiante,
 Analista Jr., Analista, Estratega, Gestor, Mentor.
 
-## 4. Modelo de datos nuevo (Prisma/SQLite)
+## 4. Modelo de datos (Prisma/Postgres)
 
 `UserProfile` (singleton "default": xpTotal, rank, rachas, statsJson/skillsJson
 reservados para fase 2) · `LessonProgress` (lessonId único, intentos, mejor
@@ -94,9 +94,11 @@ score) · `XpEvent` (ledger append-only, dedupeKey único) · `TradePlan` (1:1
 con PaperOrder: las 4 preguntas + stop + % + emoción) · `JournalEntry`
 (contentJson: snapshot del plan, resultado, reflexión) · `CoachFeedback`
 (cache permanente por (scope, refId), isMock). `PaperOrder` ganó
-`realizedPnl/realizedPnlPct` (solo ventas). SQLite no admite Json/array:
-todo lo no escalar es String JSON-encoded, parseado tras mappers de servicio
-(JSON malformado → log + default, nunca 500).
+`realizedPnl/realizedPnlPct` (solo ventas). Todo lo no escalar sigue siendo
+String JSON-encoded (convención heredada de cuando la base era SQLite, que no
+admitía Json/array -- se mantuvo tras migrar a Postgres por consistencia y
+para no reescribir los mappers de servicio existentes), parseado tras
+mappers de servicio (JSON malformado → log + default, nunca 500).
 
 ## 5. App móvil
 
@@ -114,14 +116,28 @@ venganza; aviso de concentración si >20% de cartera), `journal/[id]` (detalle
 (con `Disclaimer`), `scanner`, `settings`. Chat IA eliminado (el coach lo
 sustituye contextualmente).
 
-**Paleta** (tailwind.config.js): "app de aprendizaje, no casino financiero" —
-índigo primario (#6366F1), teal apagado para positivo (#2FA98C), terracota
-para negativo (#E0755F), ámbar (`accent`) reservado a XP/rachas. Fondos cálidos
-(#FAFAF8 / #101418).
+**Sistema visual** (tailwind.config.js): "app de aprendizaje, no casino
+financiero" — fondo cálido tipo papel de cuaderno (#FAF7F0 / #14171D),
+índigo primario (#5B5BD6), teal apagado para positivo (#178F72), arcilla
+para negativo (#C6503F), ámbar (`accent`) reservado *exclusivamente* a
+XP/racha/logros (nunca a otro contexto). Esquinas de "ficha" (14px) en vez
+de burbuja. Tres tipografías con trabajos distintos: **Plus Jakarta Sans**
+(títulos, `font-display`), **Manrope** (cuerpo, parcheado como fuente por
+defecto de todo `<Text>` vía `src/theme/text-defaults.ts`), **IBM Plex Mono**
+(reservada a cifras: precios, XP, %, scores — `font-mono`/`font-mono-bold`).
+Fuentes cargadas con `@expo-google-fonts/*` en `src/theme/fonts.ts`.
 
 **Componentes nuevos**: `CandleExample`/`LineExample` (gráficos didácticos con
 react-native-svg, datos ficticios de las lecciones), `CoachFeedbackCard`,
-`Disclaimer`.
+`Disclaimer`, `XpBar` (Reanimated, se rellena con `withTiming` + contador en
+paralelo), `StreakFlame` (llama con respiración continua, `withRepeat`),
+`LessonIcon` (silueta distinta por estado: check/velas/candado),
+`PressableScale` (spring de presión para cualquier tarjeta tocable),
+`Confetti` (celebración en la pantalla de score, solo Reanimated — **nunca
+Lottie**, que exige un módulo nativo incompatible con Expo Go). Tab bar con
+píldora tenue + barra de 3px en la pestaña activa. Onboarding de 4 pantallas
+(`app/onboarding.tsx`, flag en `expo-secure-store`) que lleva directo a la
+primera lección en el primer lanzamiento.
 
 - **Expo SDK 54** (fijada — Expo Go de Play Store solo carga la SDK que
   soporta; comprueba en Expo Go → perfil → "SDK Version" antes de subir).
@@ -131,11 +147,22 @@ react-native-svg, datos ficticios de las lecciones), `CoachFeedbackCard`,
   `npx expo install --fix` dentro de `apps/mobile`. **Cero módulos nativos
   nuevos** — todo el pivote educativo usa JS puro + react-native-svg.
 
-## 6. Infraestructura (sin cambios de fondo)
+## 6. Infraestructura
 
-- **SQLite local** (`apps/api/prisma/dev.db`, `pnpm db:push`). `PrismaService`
-  no conecta al arrancar: las rutas sin BD funcionan aunque no exista el
-  archivo.
+- **Postgres gestionado (Neon, gratis, sin tarjeta)** — sustituyó al archivo
+  SQLite local para que la API pueda desplegarse 24/7 sin perder datos en
+  cada reinicio del contenedor (ver `docs/DEPLOYMENT.md`). Misma base de
+  datos para desarrollo local y producción: es una app de un solo usuario,
+  no hay motivo para mantener dos. `PrismaService` no conecta al arrancar:
+  las rutas sin BD funcionan aunque `DATABASE_URL` falte o las tablas no
+  existan todavía (`pnpm db:push` las crea).
+- **Despliegue del backend en Render** (`render.yaml` en la raíz, plan
+  gratuito): conecta el repo de GitHub, redespliega solo en cada `git push`.
+  Contrapartida del plan gratuito: el servidor "duerme" tras ~15 min sin
+  tráfico y la siguiente petición tarda 30-60s en despertar. La app móvil
+  (`apps/mobile/app.json` → `extra.apiBaseUrl`) apunta por defecto a la URL
+  desplegada, así que funciona desde cualquier red sin depender del PC del
+  usuario.
 - **CacheService** en memoria (interfaz Redis-compatible): `wrap` single-flight
   y `getOrTrigger` no-bloqueante (el warm-up de scores del universo sigue
   intacto).
@@ -158,6 +185,15 @@ inteligente (wizard 4 pasos + diario + P&L realizado), coach IA con Gemini
 real verificado, y este documento. Todo verificado por API en vivo; pendiente
 el paseo completo en el móvil físico del usuario vía Expo Go.
 
+### Hecho (2026-08-03): sistema visual completo y despliegue 24/7
+
+Rediseño íntegro de la app móvil (paleta cálida, tipografía Jakarta/Manrope/
+Plex Mono, gamificación animada con Reanimated, tab bar con píldora,
+onboarding de 4 pantallas) — ver sección 5. Migración de SQLite a Postgres
+gestionado (Neon) y despliegue del backend en Render (`render.yaml`,
+`docs/DEPLOYMENT.md`) para que la API esté disponible 24/7 sin depender del
+PC del usuario.
+
 ### Fase 2 (el esquema ya lo anticipa)
 
 1. **Misiones** (tabla `Mission` aditiva; `XpEvent.kind` y
@@ -173,4 +209,5 @@ el paseo completo en el móvil físico del usuario vía Expo Go.
 5. **Niveles 2-6 del currículo** (metas ya definidas en
    `packages/curriculum/src/levels/locked-levels.ts`); bloque `spotPattern`
    reservado en el modelo de lección para "señala el patrón en este gráfico".
-6. Redis + BullMQ, medianas sectoriales, despliegue (igual que antes).
+6. Redis + BullMQ, medianas sectoriales, plan de pago en Render si el
+   arranque en frío del plan gratuito llega a molestar.

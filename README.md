@@ -35,9 +35,10 @@ packages/
 - Un móvil Android con la app **Expo Go** instalada (Play Store), en la misma
   red WiFi que tu PC — o el emulador de Android Studio
 
-No hace falta Docker ni cuenta de base de datos. El progreso (XP, lecciones,
-diario, paper trading) se guarda en un archivo SQLite local — ver "Puesta en
-marcha".
+El progreso (XP, lecciones, diario, paper trading) se guarda en una base de
+datos Postgres gratuita (Neon) — ver "Puesta en marcha". La API también puede
+desplegarse gratis 24/7 sin depender de tu PC: ver
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Puesta en marcha
 
@@ -58,7 +59,11 @@ informes de ejemplo (mock), claramente etiquetados. Para datos e IA reales:
    muestran contenido de ejemplo etiquetado. (Claude/Anthropic funciona como
    alternativa de pago vía `ANTHROPIC_API_KEY`.)
 
-**Crea la base de datos local una vez** (progreso, XP, diario, paper trading):
+4. **Base de datos (gratis)**: crea un proyecto en
+   [neon.tech](https://neon.tech) (sin tarjeta) y copia su "Connection
+   string" a `DATABASE_URL` en `.env`.
+
+**Crea las tablas una vez** (progreso, XP, diario, paper trading):
 
 ```bash
 pnpm db:push
@@ -84,14 +89,19 @@ pnpm dev:mobile
   perfil → "SDK Version" que coincide con `"expo"` de
   `apps/mobile/package.json` (actualmente SDK 54). Ver la nota sobre
   Reanimated/worklets en `docs/ARCHITECTURE.md` antes de tocar versiones.
-- **Importante**: desde un móvil físico, `localhost` no funciona. Averigua tu
-  IP con `ipconfig` y arranca así:
+- **Importante**: desde un móvil físico, `localhost` no funciona. Si estás
+  usando el backend local (`pnpm dev:api`), averigua la IP de tu PC con
+  `ipconfig` y arranca así:
 
   ```bash
   # PowerShell
   $env:EXPO_PUBLIC_API_URL = "http://192.168.1.42:3000"
   pnpm dev:mobile
   ```
+
+  Si ya tienes la API desplegada ([`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)),
+  no hace falta ninguna variable: `apps/mobile/app.json` ya apunta a la URL
+  pública por defecto, y la app funciona desde cualquier red.
 
 ## Scripts útiles
 
@@ -101,7 +111,7 @@ pnpm dev:mobile
 | `pnpm dev:api` / `pnpm dev:mobile` | Solo uno de los dos |
 | `pnpm test` | Tests de todos los paquetes |
 | `pnpm build` | Compila packages + backend |
-| `pnpm db:push` | Crea/actualiza el archivo SQLite local |
+| `pnpm db:push` | Crea/actualiza las tablas en Postgres (Neon) |
 
 ## Qué está implementado
 

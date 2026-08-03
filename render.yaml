@@ -1,0 +1,47 @@
+# Render "Blueprint" -- lets you deploy by pointing Render at this repo and
+# clicking "New Blueprint" instead of configuring a web service by hand.
+# See docs/DEPLOYMENT.md for the full walkthrough (Neon Postgres + Render).
+services:
+  - type: web
+    name: stockiq-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    # Order matters: `prisma db push` (which also regenerates the Prisma
+    # Client) must run BEFORE `pnpm build`, since `nest build` needs the
+    # generated client's types to compile -- there's no postinstall hook
+    # doing this automatically, and a fresh checkout has no client at all.
+    buildCommand: >-
+      corepack enable &&
+      corepack prepare pnpm@11.11.0 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @stockiq/api exec prisma db push &&
+      pnpm build
+    startCommand: node apps/api/dist/main.js
+    healthCheckPath: /
+    envVars:
+      # Set for you automatically by Render; left here as documentation.
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: "3000"
+
+      # --- Secrets: fill these in on the Render dashboard after the first
+      # deploy (Blueprint envVars with no value/sync must be entered manually,
+      # Render never reads them from this file). ---
+      - key: DATABASE_URL
+        sync: false # Neon connection string, see docs/DEPLOYMENT.md
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: TWELVEDATA_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: "gemini-2.5-flash"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true # Render generates a random secret; auth module exists but is unused
+      - key: JWT_EXPIRES_IN
+        value: "7d"

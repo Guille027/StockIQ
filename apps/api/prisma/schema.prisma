@@ -2,11 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// SQLite: a single local file, no server/Docker/cloud account needed. This
-// app is single-user by design (see docs/ARCHITECTURE.md section 10), so
-// there was never a real reason to require Postgres just to boot.
+// Managed Postgres (Neon free tier -- no card, no Docker) so the deployed API
+// keeps its data across restarts/redeploys. Previously SQLite (a local file)
+// worked fine for a single-user app running on one's own PC, but any real
+// 24/7 hosting resets the container filesystem on every restart, which would
+// silently wipe a SQLite file. One Neon database is used for both local dev
+// and production -- it's a single-user app, so there's no reason to keep two.
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -26,7 +29,7 @@ model Watchlist {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   name      String
-  tickers   String // JSON-encoded string[] -- SQLite (this Prisma version) supports neither array nor Json columns
+  tickers   String // JSON-encoded string[] -- kept as a plain string for consistency with the rest of the schema's JSON-as-string columns, even though Postgres itself could store this natively
   createdAt DateTime @default(now())
 }
 
