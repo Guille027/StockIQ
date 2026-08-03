@@ -30,7 +30,7 @@ packages/
 
 ## Requisitos
 
-- Node.js 20+
+- Node.js 22.13+ (requerido por pnpm 11.11.0, que usa el módulo interno `node:sqlite`)
 - pnpm (`npm install -g pnpm`)
 - Un móvil Android con la app **Expo Go** instalada (Play Store), en la misma
   red WiFi que tu PC — o el emulador de Android Studio

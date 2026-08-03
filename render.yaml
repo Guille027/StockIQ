@@ -20,9 +20,11 @@ services:
     startCommand: node apps/api/dist/main.js
     healthCheckPath: /
     envVars:
-      # Set for you automatically by Render; left here as documentation.
+      # pnpm 11.11.0 requires Node >=22.13 (it uses the node:sqlite builtin
+      # internally) -- Render defaults to Node 20 otherwise, which crashes
+      # corepack's pnpm install with "No such built-in module: node:sqlite".
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
       - key: PORT
         value: "3000"
 
