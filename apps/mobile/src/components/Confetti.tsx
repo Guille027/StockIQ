@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming, Easing } from "react-native-reanimated";
 
-const COLORS = ["#5B5BD6", "#178F72", "#E0930A"];
+const COLORS = ["#8b7cf6", "#6fae94", "#e8c77a"];
 const PARTICLE_COUNT = 16;
 
 interface Particle {

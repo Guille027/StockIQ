@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Path } from "react-native-svg";
 import { useColorScheme } from "nativewind";
 import { useCoachReview, useProfile } from "@/api/hooks";
 import { ApiError } from "@/api/client";
@@ -27,8 +28,9 @@ const KIND_LABELS: Record<string, string> = {
 
 // The rank card is the ONE place in the app that breaks from the flat
 // paper/surface palette -- a brand gradient, so it reads as "the achievements
-// screen of a game" rather than another list item.
-const GRADIENT = { light: ["#5B5BD6", "#476BB8"] as const, dark: ["#8B89EE", "#799DDB"] as const };
+// screen of a game" rather than another list item. Text on it is dark ink,
+// not white: the gradient is a light-mid purple, not a deep navy.
+const GRADIENT = { light: ["#cabdff", "#6a56d6"] as const, dark: ["#8b7cf6", "#6a5ad6"] as const };
 
 export default function ProfileScreen() {
   const { data, isLoading, isError, refetch } = useProfile();
@@ -45,9 +47,22 @@ export default function ProfileScreen() {
         <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
           <View className="flex-row items-center justify-between mt-2 mb-4">
             <Text className="font-display text-2xl text-ink dark:text-inkDark">Perfil</Text>
-            <Pressable onPress={() => router.push("/settings")} hitSlop={8}>
-              <Ionicons name="settings-outline" size={22} color={isDark ? "#999CB0" : "#6D7086"} />
-            </Pressable>
+            <View className="flex-row items-center gap-1">
+              <Pressable onPress={() => router.push("/explore")} hitSlop={8} className="w-9 h-9 items-center justify-center">
+                <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M4 17l5-6 4 3 7-9M15 5h5v5"
+                    stroke={isDark ? "#8a8998" : "#6b6a72"}
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </Pressable>
+              <Pressable onPress={() => router.push("/settings")} hitSlop={8} className="w-9 h-9 items-center justify-center">
+                <Ionicons name="settings-outline" size={20} color={isDark ? "#8a8998" : "#6b6a72"} />
+              </Pressable>
+            </View>
           </View>
 
           <LinearGradient
@@ -56,9 +71,13 @@ export default function ProfileScreen() {
             end={{ x: 0.9, y: 1 }}
             style={{ borderRadius: 20, padding: 20, overflow: "hidden" }}
           >
-            <View className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/10" />
-            <Text className="font-mono text-white/75 text-[11px] tracking-wide">RANGO {data.rank}</Text>
-            <Text className="font-display text-white text-2xl mt-1">{data.rankName}</Text>
+            <View className="absolute -right-8 -top-8 w-36 h-36 rounded-full" style={{ backgroundColor: "rgba(16,16,25,0.08)" }} />
+            <Text className="font-mono-bold text-[11px] tracking-wide uppercase" style={{ color: "rgba(16,16,25,0.6)" }}>
+              Rango {data.rank}
+            </Text>
+            <Text className="font-display text-2xl mt-1" style={{ color: "#101019" }}>
+              {data.rankName}
+            </Text>
             <View className="mt-4">
               <XpBar xpIntoRank={data.xpIntoRank} xpForNextRank={data.xpForNextRank} variant="onBrand" />
             </View>

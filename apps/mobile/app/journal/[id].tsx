@@ -196,7 +196,7 @@ export default function JournalEntryScreen() {
                     onChangeText={setReflection}
                     multiline
                     placeholder="ej. Vendí antes de tiempo por miedo cuando mi plan decía aguantar hasta $200..."
-                    placeholderTextColor="#98A0AA"
+                    placeholderTextColor="#8a8998"
                     className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark min-h-[90px] mb-3"
                     textAlignVertical="top"
                   />
@@ -206,7 +206,7 @@ export default function JournalEntryScreen() {
                     onChangeText={setMistakes}
                     multiline
                     placeholder={"ej. No respeté mi stop\nOperé con FOMO"}
-                    placeholderTextColor="#98A0AA"
+                    placeholderTextColor="#8a8998"
                     className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark min-h-[70px] mb-3"
                     textAlignVertical="top"
                   />
@@ -216,7 +216,7 @@ export default function JournalEntryScreen() {
                     onChangeText={setLearnings}
                     multiline
                     placeholder={"ej. Definir el stop antes de comprar, no después"}
-                    placeholderTextColor="#98A0AA"
+                    placeholderTextColor="#8a8998"
                     className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark min-h-[70px] mb-3"
                     textAlignVertical="top"
                   />

@@ -102,40 +102,64 @@ mappers de servicio (JSON malformado → log + default, nunca 500).
 
 ## 5. App móvil
 
-**Tabs**: Aprender (roadmap Duolingo + racha + XP) · Práctica (carteras paper)
-· Explorar (índices, búsqueda, screener, noticias — "herramientas para
-practicar, sin recomendaciones") · Diario (entradas + filtros + pendientes de
-reflexión) · Perfil (rango, barra XP, racha, revisión del mentor, actividad;
-engranaje → Ajustes).
+**Diseño**: la identidad visual viene de un proyecto de Claude Design
+("StockIQ visual identity" — colores, tipografía, iconografía y un
+prototipo interactivo de Aprender/Práctica/Perfil + el asistente de nueva
+operación), importado y traducido a código vía la herramienta `DesignSync`.
+Nace de un pivote de diseño explícito: la primera pasada (tema claro por
+defecto, Plus Jakarta Sans/Manrope/IBM Plex Mono) resultaba genérica; esta
+segunda pasada adopta **modo oscuro como tema principal** (más serio, menos
+"app de juego" — el claro sigue existiendo como alternativa, sincronizado al
+sistema salvo que el usuario elija otro en Ajustes), y un motivo visual
+recurrente: la **vela japonesa**, reutilizada en el icono de la pestaña
+Aprender, en los indicadores de progreso y en los medallones del camino de
+lecciones.
+
+**Tabs** (3, no 5 — Explorar se movió a pantalla de stack, Diario se fusionó
+dentro de Práctica): **Aprender** (camino de nodos circulares en zigzag,
+banner con degradado por nivel, racha + XP) · **Práctica** (sub-pestañas
+Carteras/Diario — el diario del inversor vive aquí, no en su propia pestaña;
+un icono de brújula en la cabecera lleva a Explorar) · **Perfil** (tarjeta de
+rango con degradado y texto en tinta oscura, barra XP, racha, revisión del
+mentor, actividad; iconos de Explorar y Ajustes en la cabecera).
 
 **Stack**: `lesson/[id]` (player bloque a bloque: concepto → quiz con
 explicación inmediata → pantalla de score + XP), `order/new` (wizard modal de
 4 pasos: orden → plan → emoción → confirmar; aviso suave si FOMO/euforia/
 venganza; aviso de concentración si >20% de cartera), `journal/[id]` (detalle
-+ reflexión + feedback del coach), `company/[ticker]` y `portfolio/[id]`
-(con `Disclaimer`), `scanner`, `settings`. Chat IA eliminado (el coach lo
++ reflexión + feedback del coach), `explore` (índices, búsqueda, screener,
+noticias — movida desde tab), `company/[ticker]` y `portfolio/[id]` (con
+`Disclaimer`), `scanner`, `settings`. Chat IA eliminado (el coach lo
 sustituye contextualmente).
 
-**Sistema visual** (tailwind.config.js): "app de aprendizaje, no casino
-financiero" — fondo cálido tipo papel de cuaderno (#FAF7F0 / #14171D),
-índigo primario (#5B5BD6), teal apagado para positivo (#178F72), arcilla
-para negativo (#C6503F), ámbar (`accent`) reservado *exclusivamente* a
-XP/racha/logros (nunca a otro contexto). Esquinas de "ficha" (14px) en vez
-de burbuja. Tres tipografías con trabajos distintos: **Plus Jakarta Sans**
-(títulos, `font-display`), **Manrope** (cuerpo, parcheado como fuente por
-defecto de todo `<Text>` vía `src/theme/text-defaults.ts`), **IBM Plex Mono**
-(reservada a cifras: precios, XP, %, scores — `font-mono`/`font-mono-bold`).
-Fuentes cargadas con `@expo-google-fonts/*` en `src/theme/fonts.ts`.
+**Paleta** (tailwind.config.js, mismo patrón `bg-X dark:bg-XDark` de siempre
+-- `X` = valor en modo claro, `XDark` = valor en modo oscuro, aunque el
+oscuro sea ahora el tema "principal" en cuanto a diseño): índigo primario
+#6a56e0 / #8b7cf6, ámbar (`accent`) #b9822f / #e8c77a reservado
+*exclusivamente* a XP/racha/logros, teal apagado para positivo #3f7d64 /
+#6fae94, terracota para negativo #a85a3f / #c9846a, fondo tipo papel claro
+#f7f5f1 / oscuro #101019. Esquinas de "ficha" (8/14/20px) en vez de burbuja.
 
-**Componentes nuevos**: `CandleExample`/`LineExample` (gráficos didácticos con
+**Tipografía**, tres trabajos distintos: **Space Grotesk** (títulos,
+`font-display`/`font-display-semibold`), **Inter** (cuerpo, parcheado como
+fuente por defecto de todo `<Text>` vía `src/theme/text-defaults.ts`),
+**JetBrains Mono** (reservada a cifras: precios, XP, %, scores —
+`font-mono`/`font-mono-bold`). Fuentes cargadas con `@expo-google-fonts/*`
+en `src/theme/fonts.ts`.
+
+**Componentes**: `CandleExample`/`LineExample` (gráficos didácticos con
 react-native-svg, datos ficticios de las lecciones), `CoachFeedbackCard`,
 `Disclaimer`, `XpBar` (Reanimated, se rellena con `withTiming` + contador en
-paralelo), `StreakFlame` (llama con respiración continua, `withRepeat`),
-`LessonIcon` (silueta distinta por estado: check/velas/candado),
-`PressableScale` (spring de presión para cualquier tarjeta tocable),
-`Confetti` (celebración en la pantalla de score, solo Reanimated — **nunca
-Lottie**, que exige un módulo nativo incompatible con Expo Go). Tab bar con
-píldora tenue + barra de 3px en la pestaña activa. Onboarding de 4 pantallas
+paralelo; variante `onBrand` en tinta oscura para la tarjeta de rango),
+`StreakFlame` (llama con respiración continua, `withRepeat`, admite un
+`color` de override para fundirse con el banner de Aprender),
+`LessonPathNode` (medallón circular por estado — hecho/actual/disponible/
+bloqueado — con degradado vía `expo-linear-gradient`, anillo de pulso
+Reanimated en el nodo "actual"), `PressableScale` (spring de presión para
+cualquier tarjeta tocable), `Confetti` (celebración en la pantalla de score,
+solo Reanimated — **nunca Lottie**, que exige un módulo nativo incompatible
+con Expo Go). Tab bar con fondo cuadrado redondeado por pestaña (color propio
+por pestaña, no uno compartido) en vez de píldora. Onboarding de 4 pantallas
 (`app/onboarding.tsx`, flag en `expo-secure-store`) que lleva directo a la
 primera lección en el primer lanzamiento.
 
@@ -185,14 +209,30 @@ inteligente (wizard 4 pasos + diario + P&L realizado), coach IA con Gemini
 real verificado, y este documento. Todo verificado por API en vivo; pendiente
 el paseo completo en el móvil físico del usuario vía Expo Go.
 
-### Hecho (2026-08-03): sistema visual completo y despliegue 24/7
+### Hecho (2026-08-03): primer sistema visual + despliegue 24/7
 
-Rediseño íntegro de la app móvil (paleta cálida, tipografía Jakarta/Manrope/
-Plex Mono, gamificación animada con Reanimated, tab bar con píldora,
-onboarding de 4 pantallas) — ver sección 5. Migración de SQLite a Postgres
+Primer rediseño íntegro de la app móvil (paleta cálida clara, tipografía
+Jakarta/Manrope/Plex Mono, gamificación animada con Reanimated, tab bar con
+píldora, onboarding de 4 pantallas). Migración de SQLite a Postgres
 gestionado (Neon) y despliegue del backend en Render (`render.yaml`,
 `docs/DEPLOYMENT.md`) para que la API esté disponible 24/7 sin depender del
 PC del usuario.
+
+### Hecho (2026-08-04): segundo sistema visual (Claude Design) + reestructura de navegación
+
+El primer rediseño seguía sintiéndose genérico. Se importó un proyecto de
+Claude Design ("StockIQ visual identity" — colores, tipografía, iconografía,
+prototipo interactivo) vía la herramienta `DesignSync` y se implementó por
+completo -- ver sección 5 para la paleta/tipografía/componentes finales.
+Cambios de fondo, no solo de piel: **modo oscuro pasa a ser el tema
+principal** (el claro sigue disponible), motivo de vela japonesa como hilo
+conductor visual, y **reestructura de navegación** de 5 a 3 pestañas
+(Aprender/Práctica/Perfil) — Diario se fusiona como sub-pestaña dentro de
+Práctica, Explorar se mueve a pantalla de stack con acceso desde Práctica y
+Perfil. La pantalla Aprender pasa de una lista de tarjetas a un camino de
+nodos circulares en zigzag al estilo Duolingo, con medallones de degradado
+por nivel (3 acentos de color rotando: teal/índigo/oro) y anillo de pulso
+Reanimated en la lección "actual".
 
 ### Fase 2 (el esquema ya lo anticipa)
 

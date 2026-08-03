@@ -14,8 +14,8 @@ const PAD = 10;
 export function CandleExample({ candles }: { candles: OhlcPoint[] }) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const up = isDark ? "#5BC4A8" : "#2FA98C";
-  const down = isDark ? "#EE9B85" : "#E0755F";
+  const up = isDark ? "#6fae94" : "#3f7d64";
+  const down = isDark ? "#c9846a" : "#a85a3f";
 
   if (candles.length === 0) return null;
 
@@ -60,7 +60,7 @@ export function CandleExample({ candles }: { candles: OhlcPoint[] }) {
 export function LineExample({ values }: { values: number[] }) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
-  const stroke = isDark ? "#818CF8" : "#6366F1";
+  const stroke = isDark ? "#8b7cf6" : "#6a56e0";
 
   if (values.length < 2) return null;
   const min = Math.min(...values);

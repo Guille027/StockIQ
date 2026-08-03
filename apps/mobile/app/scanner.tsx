@@ -19,7 +19,7 @@ function NumberField({ label, value, onChange, placeholder }: { label: string; v
         onChangeText={onChange}
         keyboardType="numeric"
         placeholder={placeholder}
-        placeholderTextColor="#8B93A7"
+        placeholderTextColor="#8a8998"
         className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
       />
     </View>

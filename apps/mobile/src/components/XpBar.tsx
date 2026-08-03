@@ -43,21 +43,27 @@ export function XpBar({ xpIntoRank, xpForNextRank, variant = "onBrand" }: XpBarP
 
   const style = useAnimatedStyle(() => ({ width: `${pct.value}%` }));
 
-  const track = variant === "onBrand" ? "bg-white/25" : "bg-surface dark:bg-surfaceDark";
-  const fill = variant === "onBrand" ? "bg-white" : "bg-primary dark:bg-primaryDark";
-  const captionColor = variant === "onBrand" ? "text-white/85" : "text-muted dark:text-mutedDark";
+  // The rank card is a light purple gradient (not a dark surface), so its
+  // track/fill/caption use dark ink -- matching the gradient's own text
+  // color -- instead of white.
+  const trackStyle = variant === "onBrand" ? { backgroundColor: "rgba(16,16,25,0.2)" } : undefined;
+  const fillStyle = variant === "onBrand" ? { backgroundColor: "#101019" } : undefined;
+  const track = variant === "onBrand" ? "" : "bg-surface dark:bg-surfaceDark";
+  const fill = variant === "onBrand" ? "" : "bg-primary dark:bg-primaryDark";
+  const captionColor = variant === "onBrand" ? "" : "text-muted dark:text-mutedDark";
+  const captionStyle = variant === "onBrand" ? { color: "rgba(16,16,25,0.65)" } : undefined;
 
   return (
     <View>
-      <View className={cn("h-2.5 rounded-full overflow-hidden", track)}>
-        <Animated.View className={cn("h-full rounded-full", fill)} style={style} />
+      <View className={cn("h-2.5 rounded-full overflow-hidden", track)} style={trackStyle}>
+        <Animated.View className={cn("h-full rounded-full", fill)} style={[style, fillStyle]} />
       </View>
       <View className="flex-row justify-between mt-2">
-        <Text className={cn("font-mono text-[11.5px]", captionColor)}>
+        <Text className={cn("font-mono text-[11.5px]", captionColor)} style={captionStyle}>
           {displayed}
           {xpForNextRank ? ` / ${xpForNextRank}` : ""}
         </Text>
-        <Text className={cn("font-mono text-[11.5px]", captionColor)}>
+        <Text className={cn("font-mono text-[11.5px]", captionColor)} style={captionStyle}>
           {xpForNextRank ? `${xpForNextRank - xpIntoRank} para el siguiente rango` : "Rango máximo"}
         </Text>
       </View>

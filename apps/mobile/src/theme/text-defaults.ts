@@ -1,7 +1,7 @@
 import { Text, TextInput } from "react-native";
 
 /**
- * Sets Manrope as the default body font for every <Text>/<TextInput> in the
+ * Sets Inter as the default body font for every <Text>/<TextInput> in the
  * app, so ordinary text picks up the new type system without touching every
  * screen. This is RN's own documented pattern for a global default font
  * (Text.defaultProps.style is still respected regardless of Text's internal
@@ -17,9 +17,9 @@ export function applyDefaultTextFont() {
 
   const anyText = Text as unknown as { defaultProps?: { style?: unknown } };
   anyText.defaultProps = anyText.defaultProps || {};
-  anyText.defaultProps.style = [{ fontFamily: "Manrope_500Medium" }, anyText.defaultProps.style];
+  anyText.defaultProps.style = [{ fontFamily: "Inter_400Regular" }, anyText.defaultProps.style];
 
   const anyInput = TextInput as unknown as { defaultProps?: { style?: unknown } };
   anyInput.defaultProps = anyInput.defaultProps || {};
-  anyInput.defaultProps.style = [{ fontFamily: "Manrope_500Medium" }, anyInput.defaultProps.style];
+  anyInput.defaultProps.style = [{ fontFamily: "Inter_400Regular" }, anyInput.defaultProps.style];
 }

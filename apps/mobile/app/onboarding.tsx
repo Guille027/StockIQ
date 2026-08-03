@@ -113,12 +113,12 @@ export default function OnboardingScreen() {
 }
 
 function Illustration({ kind, isDark }: { kind: "lessons" | "shield" | "mentor" | "flame"; isDark: boolean }) {
-  const indigo = isDark ? "#8B89EE" : "#5B5BD6";
-  const indigoSoft = isDark ? "#262456" : "#ECEBFA";
-  const teal = isDark ? "#4FCBAD" : "#178F72";
-  const amber = isDark ? "#F5B03D" : "#E0930A";
-  const surface2 = isDark ? "#242838" : "#F1ECDE";
-  const line = isDark ? "#2B3040" : "#E7E0CE";
+  const indigo = isDark ? "#8b7cf6" : "#6a56e0";
+  const indigoSoft = isDark ? "rgba(139,124,246,0.16)" : "rgba(106,86,224,0.12)";
+  const teal = isDark ? "#6fae94" : "#3f7d64";
+  const amber = isDark ? "#e8c77a" : "#b9822f";
+  const surface2 = isDark ? "#232535" : "#efece3";
+  const line = isDark ? "rgba(255,255,255,0.08)" : "rgba(20,20,30,0.10)";
 
   if (kind === "lessons") {
     return (

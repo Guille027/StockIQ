@@ -45,6 +45,10 @@ export default function RootLayout() {
             <Stack.Screen name="order/new" options={{ presentation: "modal" }} />
             <Stack.Screen name="journal/[id]" />
             <Stack.Screen
+              name="explore"
+              options={{ headerShown: true, headerTitle: "Explorar", headerBackTitle: "Atrás" }}
+            />
+            <Stack.Screen
               name="scanner"
               options={{ headerShown: true, headerTitle: "Screener", headerBackTitle: "Atrás" }}
             />

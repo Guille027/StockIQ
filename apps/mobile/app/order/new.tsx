@@ -98,7 +98,7 @@ export default function NewOrderScreen() {
         <Pressable className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={() => router.back()}>
           <Text className="font-sans-bold text-white">Volver a la cartera</Text>
         </Pressable>
-        <Pressable className="mt-3" onPress={() => router.replace("/(tabs)/journal")}>
+        <Pressable className="mt-3" onPress={() => router.replace("/(tabs)/practice?tab=diario")}>
           <Text className="text-primary dark:text-primaryDark text-sm">Ver en tu diario</Text>
         </Pressable>
       </SafeAreaView>
@@ -147,7 +147,7 @@ export default function NewOrderScreen() {
                   }}
                   autoCapitalize="characters"
                   placeholder="Busca por nombre o ticker..."
-                  placeholderTextColor="#98A0AA"
+                  placeholderTextColor="#8a8998"
                   className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
                 />
                 {!tickerSelected && ticker.length > 0 && search.data?.results.length ? (
@@ -179,7 +179,7 @@ export default function NewOrderScreen() {
                   onChangeText={setAmountValue}
                   keyboardType="numeric"
                   placeholder={inputMode === "shares" ? "ej. 5" : "ej. 2500"}
-                  placeholderTextColor="#98A0AA"
+                  placeholderTextColor="#8a8998"
                   className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
                 />
                 <Pressable onPress={() => setInputMode((m) => (m === "shares" ? "amount" : "shares"))}>
@@ -219,7 +219,7 @@ export default function NewOrderScreen() {
                       multiline
                       numberOfLines={3}
                       placeholder={q.placeholder}
-                      placeholderTextColor="#98A0AA"
+                      placeholderTextColor="#8a8998"
                       className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark min-h-[72px]"
                       textAlignVertical="top"
                     />
@@ -231,7 +231,7 @@ export default function NewOrderScreen() {
                   onChangeText={setStopPrice}
                   keyboardType="numeric"
                   placeholder="ej. 170"
-                  placeholderTextColor="#98A0AA"
+                  placeholderTextColor="#8a8998"
                   className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
                 />
               </View>
