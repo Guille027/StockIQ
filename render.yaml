@@ -18,7 +18,11 @@ services:
       pnpm --filter @stockiq/api exec prisma db push &&
       pnpm build
     startCommand: node apps/api/dist/main.js
-    healthCheckPath: /
+    # AppController only has a GET /health route (returns 200 {status:"ok"});
+    # there's no handler for GET / at all, so it 404s -- Render's health
+    # check needs a 2xx response, and was stuck waiting forever on a path
+    # that could never return one.
+    healthCheckPath: /health
     envVars:
       # pnpm 11.11.0 requires Node >=22.13 (it uses the node:sqlite builtin
       # internally) -- Render defaults to Node 20 otherwise, which crashes
