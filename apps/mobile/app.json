@@ -30,7 +30,7 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiBaseUrl": "https://stockiq-api.onrender.com"
+      "apiBaseUrl": "https://stockiq-api-qwpp.onrender.com"
     }
   }
 }

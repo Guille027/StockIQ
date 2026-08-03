@@ -55,16 +55,17 @@ Render despliega conectándose a un repositorio de GitHub.
    - `JWT_SECRET` se genera solo, no hace falta tocarlo.
 5. Pulsa **Apply** / **Create**. El primer build tarda unos minutos (instala
    dependencias, compila, y crea las tablas en Neon con `prisma db push`).
-6. Cuando termine, Render te da una URL pública, normalmente
-   `https://stockiq-api.onrender.com`. Compruébala abriendo `/docs` en el
-   navegador (Swagger) -- si carga, está viva.
+6. Cuando termine, Render te da una URL pública (normalmente
+   `https://stockiq-api-XXXX.onrender.com` -- Render añade un sufijo si el
+   nombre exacto ya está cogido, como pasó al desplegar esta instancia).
+   Compruébala abriendo `/health` en el navegador -- si responde
+   `{"status":"ok",...}`, está viva.
 
 ## 4. Apunta la app móvil a la API desplegada
 
-Si tu URL de Render es exactamente `https://stockiq-api.onrender.com`, no
-hace falta tocar nada más -- `apps/mobile/app.json` ya usa esa URL por
-defecto. Si Render te dio una URL distinta (por ejemplo porque ese nombre ya
-estaba cogido), actualiza `apps/mobile/app.json`:
+`apps/mobile/app.json` (`extra.apiBaseUrl`) ya apunta a la URL real de esta
+instancia desplegada. Si alguna vez recreas el servicio en Render y te da una
+URL distinta, actualiza `apps/mobile/app.json`:
 
 ```json
 "extra": {
