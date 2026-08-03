@@ -55,8 +55,13 @@ export default function OnboardingScreen() {
     } catch {
       // storage unavailable -- proceed anyway, just won't skip onboarding next time
     }
+    // Replace onboarding with the tabs first so there's always a screen
+    // underneath the lesson -- pushing the lesson straight over a replace
+    // would leave it as the stack root, breaking the lesson's back/exit
+    // button (router.back() has nothing to return to).
+    router.replace("/(tabs)");
     const firstLesson = roadmap?.levels[0]?.lessons[0]?.id;
-    router.replace(firstLesson ? `/lesson/${firstLesson}` : "/(tabs)");
+    if (firstLesson) router.push(`/lesson/${firstLesson}`);
   };
 
   const isLast = index === SLIDES.length - 1;

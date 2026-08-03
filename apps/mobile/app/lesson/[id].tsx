@@ -14,6 +14,17 @@ import { Confetti } from "@/components/Confetti";
 import { cn } from "@/utils/cn";
 
 /**
+ * Lessons can be entered with nothing underneath them in the stack (e.g. the
+ * onboarding carousel routes straight into the first lesson) -- router.back()
+ * throws "GO_BACK was not handled by any navigator" in that case, so fall
+ * back to Aprender instead of assuming a previous screen exists.
+ */
+function exitLesson() {
+  if (router.canGoBack()) router.back();
+  else router.replace("/(tabs)");
+}
+
+/**
  * Block-by-block lesson player: one block per screen, Duolingo-style.
  * Quiz answers are graded server-side at the end; the instant right/wrong
  * tint here is purely visual feedback (the answer key ships in each quiz
@@ -75,7 +86,7 @@ export default function LessonScreen() {
       {lesson && !finished ? (
         <View className="flex-1 px-4">
           <View className="flex-row items-center gap-3 mt-2">
-            <Pressable onPress={() => router.back()} hitSlop={10}>
+            <Pressable onPress={exitLesson} hitSlop={10}>
               <Text className="text-muted dark:text-mutedDark text-xl">✕</Text>
             </Pressable>
             <View className="flex-1 h-2.5 bg-surface dark:bg-surfaceDark rounded-full overflow-hidden">
@@ -133,7 +144,7 @@ function ResultScreen({ scorePct, xpAwarded }: { scorePct: number; xpAwarded: nu
           <Text className="font-mono-bold text-accent dark:text-accentDark">+{xpAwarded} XP</Text>
         </View>
       ) : null}
-      <Pressable className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={() => router.back()}>
+      <Pressable className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={exitLesson}>
         <Text className="font-sans-bold text-white">Continuar</Text>
       </Pressable>
     </View>
