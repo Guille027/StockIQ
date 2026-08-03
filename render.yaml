@@ -25,12 +25,15 @@ services:
       # corepack's pnpm install with "No such built-in module: node:sqlite".
       - key: NODE_VERSION
         value: "22"
-      # No PORT var here on purpose: Render injects its own (the internal
-      # health check probes that value), and main.ts already reads
-      # process.env.PORT -- hardcoding it to 3000 previously made the app
-      # listen on a different port than the one Render's health check hit,
-      # so the deploy hung forever waiting for a response that could never
-      # come.
+      # Render's internal health check always probes port 10000 for a
+      # "node" runtime web service, regardless of what the app itself
+      # thinks its default is. Deleting this var from render.yaml did NOT
+      # remove the stale PORT=3000 already set on the service (Blueprint
+      # sync updates values for vars still listed here, but doesn't delete
+      # ones that disappear from the file) -- so it's set explicitly to the
+      # value Render actually expects instead.
+      - key: PORT
+        value: "10000"
 
       # --- Secrets: fill these in on the Render dashboard after the first
       # deploy (Blueprint envVars with no value/sync must be entered manually,
