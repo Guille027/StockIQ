@@ -25,8 +25,12 @@ services:
       # corepack's pnpm install with "No such built-in module: node:sqlite".
       - key: NODE_VERSION
         value: "22"
-      - key: PORT
-        value: "3000"
+      # No PORT var here on purpose: Render injects its own (the internal
+      # health check probes that value), and main.ts already reads
+      # process.env.PORT -- hardcoding it to 3000 previously made the app
+      # listen on a different port than the one Render's health check hit,
+      # so the deploy hung forever waiting for a response that could never
+      # come.
 
       # --- Secrets: fill these in on the Render dashboard after the first
       # deploy (Blueprint envVars with no value/sync must be entered manually,
