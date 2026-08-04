@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useAiReport, useCompanyProfile, useGenerateAiReport, useNews } from "@/api/hooks";
 import { ApiError } from "@/api/client";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { SectionHeader } from "@/components/SectionHeader";
 import { LoadingState } from "@/components/LoadingState";
@@ -129,24 +130,24 @@ export default function CompanyProfileScreen() {
           <SectionHeader title="Informe IA" />
           <View className="flex-row gap-2 mb-3">
             {AI_TABS.map((tab) => (
-              <Pressable key={tab} onPress={() => setAiTab(tab)} className="flex-1">
+              <PressableScale key={tab} onPress={() => setAiTab(tab)} className="flex-1">
                 <View className={cn("py-2 rounded-lg items-center", aiTab === tab ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")}>
                   <Text className={aiTab === tab ? "font-sans-semibold text-white text-xs" : "text-ink dark:text-inkDark text-xs"}>{tab}</Text>
                 </View>
-              </Pressable>
+              </PressableScale>
             ))}
           </View>
 
           {reportMissing && !generateReport.data ? (
             <Card className="items-center">
               <Text className="text-ink dark:text-inkDark text-sm text-center mb-3">Todavía no se ha generado un informe IA para {ticker}.</Text>
-              <Pressable
+              <PressableScale
                 onPress={() => generateReport.mutate()}
                 disabled={generateReport.isPending}
                 className="bg-primary dark:bg-primaryDark rounded-xl px-5 py-2.5"
               >
                 <Text className="font-sans-bold text-white">{generateReport.isPending ? "Generando..." : "Generar informe IA"}</Text>
-              </Pressable>
+              </PressableScale>
             </Card>
           ) : null}
 

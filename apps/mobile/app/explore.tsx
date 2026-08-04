@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useHome, useTickerSearch } from "@/api/hooks";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { SectionHeader } from "@/components/SectionHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
@@ -52,7 +53,7 @@ export default function ExploreScreen() {
           {search.length > 0 && searchResults?.results.length ? (
             <View className="border border-border dark:border-borderDark rounded-xl mt-1 overflow-hidden">
               {searchResults.results.slice(0, 6).map((r) => (
-                <Pressable
+                <PressableScale
                   key={r.ticker}
                   className="px-4 py-3 bg-card dark:bg-cardDark border-b border-border dark:border-borderDark"
                   onPress={() => {
@@ -63,12 +64,12 @@ export default function ExploreScreen() {
                   <Text className="text-ink dark:text-inkDark font-medium">
                     {r.ticker} <Text className="text-muted dark:text-mutedDark font-normal">· {r.name}</Text>
                   </Text>
-                </Pressable>
+                </PressableScale>
               ))}
             </View>
           ) : null}
 
-          <Pressable onPress={() => router.push("/scanner")}>
+          <PressableScale onPress={() => router.push("/scanner")}>
             <Card className="flex-row items-center gap-3 mt-3">
               <Text className="text-xl">🔍</Text>
               <View className="flex-1">
@@ -77,7 +78,7 @@ export default function ExploreScreen() {
               </View>
               <Text className="text-muted dark:text-mutedDark">›</Text>
             </Card>
-          </Pressable>
+          </PressableScale>
 
           <Card className="mt-3">
             <Text className="font-sans-bold text-ink dark:text-inkDark mb-1">{data.dailySummary.headline}</Text>

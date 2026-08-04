@@ -1,7 +1,8 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useColorScheme } from "nativewind";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { cn } from "@/utils/cn";
 
 const THEME_OPTIONS = [
@@ -25,11 +26,11 @@ export default function SettingsScreen() {
         <Text className="font-sans-bold text-ink dark:text-inkDark mb-2">Apariencia</Text>
         <Card className="flex-row gap-2 mb-4">
           {THEME_OPTIONS.map((opt) => (
-            <Pressable key={opt.key} className="flex-1" onPress={() => setColorScheme(opt.key)}>
+            <PressableScale key={opt.key} className="flex-1" onPress={() => setColorScheme(opt.key)}>
               <View className={cn("py-2 rounded-lg items-center", colorScheme === opt.key ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")}>
                 <Text className={colorScheme === opt.key ? "font-sans-semibold text-white text-xs" : "text-ink dark:text-inkDark text-xs"}>{opt.label}</Text>
               </View>
-            </Pressable>
+            </PressableScale>
           ))}
         </Card>
 

@@ -2,7 +2,15 @@ import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Path, Rect } from "react-native-svg";
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { useColorScheme } from "nativewind";
 
 export type LessonNodeStatus = "done" | "current" | "available" | "locked";
@@ -22,6 +30,11 @@ export const LEVEL_ACCENTS: LevelAccent[] = [
   { light: "#cabdff", mid: "#8b7cf6", dark: "#6a56d6", shadow: "#241c5c" },
   { light: "#f3d9a0", mid: "#d9a441", dark: "#a97a26", shadow: "#3c2a08" },
 ];
+
+/** A completed lesson always reads as "done" in the same green, regardless
+ * of which level (and therefore which accent) it belongs to -- level color
+ * is an identity token for *available* work, not a status color. */
+const DONE_ACCENT: LevelAccent = { light: "#a9e0c8", mid: "#5fb98c", dark: "#2f6b54", shadow: "#0e2e24" };
 
 const LOCKED = {
   dark: { ring: "#15161f", bg: "#1e2030", icon: "#4d4c5c" },
@@ -44,6 +57,7 @@ export function LessonPathNode({
   sub,
   align,
   onPress,
+  index = 0,
 }: {
   status: LessonNodeStatus;
   accent: LevelAccent;
@@ -51,6 +65,8 @@ export function LessonPathNode({
   sub: string;
   align: LessonNodeAlign;
   onPress: () => void;
+  /** Position within the path -- staggers the mount-in animation. */
+  index?: number;
 }) {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -59,6 +75,10 @@ export function LessonPathNode({
 
   return (
     <Animated.View
+      entering={FadeInDown.delay(Math.min(index, 8) * 60)
+        .duration(420)
+        .springify()
+        .damping(16)}
       style={{ alignItems: align === "flex-start" ? "flex-start" : align === "flex-end" ? "flex-end" : "center" }}
       className="mb-6"
     >
@@ -98,6 +118,16 @@ function NodeGlyph({
   }, [status]);
   const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
 
+  // Done medallions pop in with a little overshoot -- a small win each time.
+  const pop = useSharedValue(status === "done" ? 0 : 1);
+  useEffect(() => {
+    if (status === "done") pop.value = withSpring(1, { damping: 8, stiffness: 180 });
+  }, [status]);
+  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
+
+  const press = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: press.value }] }));
+
   if (status === "locked") {
     return (
       <View style={{ width: 52, height: 60 }}>
@@ -128,10 +158,19 @@ function NodeGlyph({
   const size = big ? 72 : 64;
   const ringSize = big ? 64 : 56;
   const ringOffset = big ? 14 : 12;
+  const resolved = status === "done" ? DONE_ACCENT : accent;
 
   return (
-    <Pressable onPress={onPress}>
-      <Animated.View style={[{ width: size, height: size + 10 }, big ? pulseStyle : undefined]}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => {
+        press.value = withTiming(0.94, { duration: 80 });
+      }}
+      onPressOut={() => {
+        press.value = withSpring(1, { damping: 12, stiffness: 220 });
+      }}
+    >
+      <Animated.View style={[{ width: size, height: size + 10 }, pressStyle, big ? pulseStyle : undefined, status === "done" ? popStyle : undefined]}>
         <View
           style={{
             position: "absolute",
@@ -140,11 +179,11 @@ function NodeGlyph({
             width: ringSize,
             height: ringSize,
             borderRadius: 999,
-            backgroundColor: accent.shadow,
+            backgroundColor: resolved.shadow,
           }}
         />
         <LinearGradient
-          colors={status === "available" ? [accent.mid, accent.mid] : [accent.light, accent.mid, accent.dark]}
+          colors={status === "available" ? [resolved.mid, resolved.mid] : [resolved.light, resolved.mid, resolved.dark]}
           start={{ x: 0.32, y: 0.26 }}
           end={{ x: 0.85, y: 0.9 }}
           style={{
@@ -160,11 +199,11 @@ function NodeGlyph({
         >
           {status === "done" ? (
             <Svg width={big ? 26 : 24} height={big ? 26 : 24} viewBox="0 0 24 24" fill="none">
-              <Path d="M4 12l5 5L20 6" stroke={accent.shadow} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d="M4 12l5 5L20 6" stroke={resolved.shadow} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
             </Svg>
           ) : (
             <Svg width={big ? 26 : 22} height={big ? 26 : 22} viewBox="0 0 24 24">
-              <Path d="M8 5l11 7-11 7z" fill={status === "current" ? "#101019" : accent.shadow} />
+              <Path d="M8 5l11 7-11 7z" fill={status === "current" ? "#101019" : resolved.shadow} />
             </Svg>
           )}
         </LinearGradient>

@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
-import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { useColorScheme } from "nativewind";
 import { useRoadmap } from "@/api/hooks";
+import { PressableScale } from "@/components/PressableScale";
 import { ONBOARDING_SEEN_KEY } from "@/theme/onboarding-key";
 import { cn } from "@/utils/cn";
 
@@ -96,16 +97,16 @@ export default function OnboardingScreen() {
         </View>
         <View className="flex-row gap-3 px-6 w-full pb-4">
           {!isLast ? (
-            <Pressable className="flex-1 items-center py-3.5" onPress={finish}>
+            <PressableScale className="flex-1 items-center py-3.5" onPress={finish}>
               <Text className="font-sans-semibold text-muted dark:text-mutedDark">Saltar</Text>
-            </Pressable>
+            </PressableScale>
           ) : null}
-          <Pressable
+          <PressableScale
             className="flex-[2] bg-primary dark:bg-primaryDark rounded-xl py-3.5 items-center"
             onPress={() => (isLast ? finish() : scrollRef.current?.scrollTo({ x: SCREEN_W * (index + 1), animated: true }))}
           >
             <Text className="font-sans-bold text-white">{isLast ? "Empieza tu primera lección" : "Siguiente"}</Text>
-          </Pressable>
+          </PressableScale>
         </View>
       </View>
     </SafeAreaView>

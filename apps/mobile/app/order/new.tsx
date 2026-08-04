@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { EMOTIONAL_STATES, EMOTION_LABELS, type EmotionalState } from "@stockiq/shared-types";
 import { usePlaceOrder, usePortfolio, useTickerSearch } from "@/api/hooks";
 import { ApiError } from "@/api/client";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { cn } from "@/utils/cn";
 
 const STEPS = ["Orden", "Tu plan", "Emoción", "Confirmar"] as const;
@@ -95,12 +96,12 @@ export default function NewOrderScreen() {
             <Text className="font-mono-bold text-accent dark:text-accentDark">+{success.xpAwarded} XP por planificar</Text>
           </View>
         ) : null}
-        <Pressable className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={() => router.back()}>
+        <PressableScale className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={() => router.back()}>
           <Text className="font-sans-bold text-white">Volver a la cartera</Text>
-        </Pressable>
-        <Pressable className="mt-3" onPress={() => router.replace("/(tabs)/practice?tab=diario")}>
+        </PressableScale>
+        <PressableScale className="mt-3" onPress={() => router.replace("/(tabs)/practice?tab=diario")}>
           <Text className="text-primary dark:text-primaryDark text-sm">Ver en tu diario</Text>
-        </Pressable>
+        </PressableScale>
       </SafeAreaView>
     );
   }
@@ -110,9 +111,9 @@ export default function NewOrderScreen() {
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View className="flex-1 px-4">
           <View className="flex-row items-center gap-3 mt-2">
-            <Pressable onPress={() => (step === 0 ? router.back() : setStep((s) => s - 1))} hitSlop={10}>
+            <PressableScale onPress={() => (step === 0 ? router.back() : setStep((s) => s - 1))} hitSlop={10}>
               <Text className="text-muted dark:text-mutedDark text-xl">{step === 0 ? "✕" : "‹"}</Text>
-            </Pressable>
+            </PressableScale>
             <View className="flex-1 flex-row items-center justify-center gap-2">
               {STEPS.map((label, i) => (
                 <View key={label} className={cn("h-1.5 rounded-full flex-1", i <= step ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")} />
@@ -128,13 +129,13 @@ export default function NewOrderScreen() {
 
                 <View className="flex-row gap-2 mb-4">
                   {(["buy", "sell"] as const).map((s) => (
-                    <Pressable key={s} className="flex-1" onPress={() => setSide(s)}>
+                    <PressableScale key={s} className="flex-1" onPress={() => setSide(s)}>
                       <View className={cn("py-2.5 rounded-xl items-center border", side === s ? "bg-primarySoft dark:bg-primarySoftDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                         <Text className={cn("text-sm font-sans-semibold", side === s ? "text-primary dark:text-primaryDark" : "text-muted dark:text-mutedDark")}>
                           {s === "buy" ? "Comprar" : "Vender"}
                         </Text>
                       </View>
-                    </Pressable>
+                    </PressableScale>
                   ))}
                 </View>
 
@@ -154,7 +155,7 @@ export default function NewOrderScreen() {
                   <View className="border border-border dark:border-borderDark rounded-xl mt-1 overflow-hidden max-h-56">
                     <ScrollView nestedScrollEnabled>
                       {search.data.results.map((r) => (
-                        <Pressable
+                        <PressableScale
                           key={r.ticker}
                           className="px-3 py-2.5 bg-card dark:bg-cardDark border-b border-border dark:border-borderDark"
                           onPress={() => {
@@ -165,7 +166,7 @@ export default function NewOrderScreen() {
                           <Text className="text-ink dark:text-inkDark text-sm">
                             {r.ticker} <Text className="text-muted dark:text-mutedDark">· {r.name}</Text>
                           </Text>
-                        </Pressable>
+                        </PressableScale>
                       ))}
                     </ScrollView>
                   </View>
@@ -182,11 +183,11 @@ export default function NewOrderScreen() {
                   placeholderTextColor="#8a8998"
                   className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark"
                 />
-                <Pressable onPress={() => setInputMode((m) => (m === "shares" ? "amount" : "shares"))}>
+                <PressableScale onPress={() => setInputMode((m) => (m === "shares" ? "amount" : "shares"))}>
                   <Text className="text-primary dark:text-primaryDark text-xs mt-2">
                     {inputMode === "shares" ? "Prefiero indicar un importe ($)" : "Prefiero indicar un número de acciones"}
                   </Text>
-                </Pressable>
+                </PressableScale>
 
                 {portfolioPct !== undefined ? (
                   <Card className="mt-4">
@@ -245,14 +246,14 @@ export default function NewOrderScreen() {
                 </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {EMOTIONAL_STATES.map((e) => (
-                    <Pressable key={e} onPress={() => setEmotion(e)}>
+                    <PressableScale key={e} onPress={() => setEmotion(e)}>
                       <View className={cn("flex-row items-center gap-1.5 px-3.5 py-2.5 rounded-full border", emotion === e ? "bg-primarySoft dark:bg-primarySoftDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                         <Text>{EMOTION_LABELS[e].emoji}</Text>
                         <Text className={cn("text-sm", emotion === e ? "text-primary dark:text-primaryDark font-medium" : "text-ink dark:text-inkDark")}>
                           {EMOTION_LABELS[e].label}
                         </Text>
                       </View>
-                    </Pressable>
+                    </PressableScale>
                   ))}
                 </View>
                 {emotion && ALERT_EMOTIONS.includes(emotion) ? (
@@ -286,7 +287,7 @@ export default function NewOrderScreen() {
             ) : null}
           </ScrollView>
 
-          <Pressable
+          <PressableScale
             className={cn("rounded-xl py-3.5 items-center mb-4", !stepValid() || placeOrder.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
             disabled={!stepValid() || placeOrder.isPending}
             onPress={() => (step === 3 ? submit() : setStep((s) => s + 1))}
@@ -294,7 +295,7 @@ export default function NewOrderScreen() {
             <Text className={cn("font-sans-bold", !stepValid() || placeOrder.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
               {placeOrder.isPending ? "Ejecutando..." : step === 3 ? `${side === "buy" ? "Comprar" : "Vender"} con plan` : "Continuar"}
             </Text>
-          </Pressable>
+          </PressableScale>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

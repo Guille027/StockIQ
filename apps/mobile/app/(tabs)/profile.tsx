@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +8,7 @@ import { useColorScheme } from "nativewind";
 import { useCoachReview, useProfile } from "@/api/hooks";
 import { ApiError } from "@/api/client";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { CoachFeedbackCard } from "@/components/CoachFeedbackCard";
 import { XpBar } from "@/components/XpBar";
 import { StreakFlame } from "@/components/StreakFlame";
@@ -48,7 +49,7 @@ export default function ProfileScreen() {
           <View className="flex-row items-center justify-between mt-2 mb-4">
             <Text className="font-display text-2xl text-ink dark:text-inkDark">Perfil</Text>
             <View className="flex-row items-center gap-1">
-              <Pressable onPress={() => router.push("/explore")} hitSlop={8} className="w-9 h-9 items-center justify-center">
+              <PressableScale onPress={() => router.push("/explore")} hitSlop={8} className="w-9 h-9 items-center justify-center">
                 <Svg width={19} height={19} viewBox="0 0 24 24" fill="none">
                   <Path
                     d="M4 17l5-6 4 3 7-9M15 5h5v5"
@@ -58,10 +59,10 @@ export default function ProfileScreen() {
                     strokeLinejoin="round"
                   />
                 </Svg>
-              </Pressable>
-              <Pressable onPress={() => router.push("/settings")} hitSlop={8} className="w-9 h-9 items-center justify-center">
+              </PressableScale>
+              <PressableScale onPress={() => router.push("/settings")} hitSlop={8} className="w-9 h-9 items-center justify-center">
                 <Ionicons name="settings-outline" size={20} color={isDark ? "#8a8998" : "#6b6a72"} />
-              </Pressable>
+              </PressableScale>
             </View>
           </View>
 
@@ -109,7 +110,7 @@ export default function ProfileScreen() {
               <Text className="text-muted dark:text-mutedDark text-sm mb-3">
                 Pide a tu mentor una revisión de tus últimas operaciones: patrones repetidos, emociones al operar y disciplina con tus propios planes.
               </Text>
-              <Pressable
+              <PressableScale
                 onPress={() => review.mutate()}
                 disabled={review.isPending}
                 className={cn("rounded-xl py-3 items-center", review.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
@@ -117,7 +118,7 @@ export default function ProfileScreen() {
                 <Text className={cn("font-sans-bold", review.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
                   {review.isPending ? "Revisando tus operaciones..." : "🧑‍🏫 Pedir revisión"}
                 </Text>
-              </Pressable>
+              </PressableScale>
               {review.isError ? (
                 <Text className="text-negative dark:text-negativeDark text-xs mt-2">
                   {review.error instanceof ApiError ? review.error.message : "No se pudo generar la revisión."}

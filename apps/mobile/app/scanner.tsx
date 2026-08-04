@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useCompanies, useScanner } from "@/api/hooks";
 import type { ScannerFilter } from "@/api/types";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
@@ -66,31 +67,31 @@ export default function ScannerScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
             <View className="flex-row gap-2">
               {(companiesData?.sectors ?? []).map((s) => (
-                <Pressable key={s} onPress={() => setSector(sector === s ? null : s)}>
+                <PressableScale key={s} onPress={() => setSector(sector === s ? null : s)}>
                   <View className={cn("px-3 py-1.5 rounded-full border", sector === s ? "bg-primary dark:bg-primaryDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                     <Text className={sector === s ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>{s}</Text>
                   </View>
-                </Pressable>
+                </PressableScale>
               ))}
             </View>
           </ScrollView>
 
           <View className="flex-row gap-2 mb-4">
-            <Pressable onPress={() => setInsiderBuyingOnly((v) => !v)} className="flex-1">
+            <PressableScale onPress={() => setInsiderBuyingOnly((v) => !v)} className="flex-1">
               <View className={cn("px-3 py-2 rounded-xl border items-center", insiderBuyingOnly ? "bg-primary dark:bg-primaryDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                 <Text className={insiderBuyingOnly ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>Insider buying</Text>
               </View>
-            </Pressable>
-            <Pressable onPress={() => setPositiveNewsOnly((v) => !v)} className="flex-1">
+            </PressableScale>
+            <PressableScale onPress={() => setPositiveNewsOnly((v) => !v)} className="flex-1">
               <View className={cn("px-3 py-2 rounded-xl border items-center", positiveNewsOnly ? "bg-primary dark:bg-primaryDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
                 <Text className={positiveNewsOnly ? "text-white text-xs font-medium" : "text-ink dark:text-inkDark text-xs"}>Noticias positivas</Text>
               </View>
-            </Pressable>
+            </PressableScale>
           </View>
 
-          <Pressable onPress={runScan} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
+          <PressableScale onPress={runScan} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
             <Text className="font-sans-bold text-white">Buscar</Text>
-          </Pressable>
+          </PressableScale>
         </Card>
 
         {isLoading ? <LoadingState label="Analizando el universo de empresas..." /> : null}
@@ -101,7 +102,7 @@ export default function ScannerScreen() {
             <Text className="font-mono text-muted dark:text-mutedDark text-sm mb-2">{data.count} resultados</Text>
             <View className="gap-2">
               {data.results.map((row) => (
-                <Pressable key={row.ticker} onPress={() => router.push(`/company/${row.ticker}`)}>
+                <PressableScale key={row.ticker} onPress={() => router.push(`/company/${row.ticker}`)}>
                   <Card className="flex-row items-center justify-between">
                     <View className="flex-1 pr-3">
                       <Text className="font-sans-bold text-ink dark:text-inkDark">
@@ -113,7 +114,7 @@ export default function ScannerScreen() {
                     </View>
                     <ScoreBadge value={row.globalScore} size="sm" />
                   </Card>
-                </Pressable>
+                </PressableScale>
               ))}
             </View>
           </View>

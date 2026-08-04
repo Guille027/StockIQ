@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { EMOTION_LABELS } from "@stockiq/shared-types";
 import { useCoachFeedback, useJournalEntry, useRequestCoachFeedback, useSaveReflection } from "@/api/hooks";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { CoachFeedbackCard } from "@/components/CoachFeedbackCard";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
@@ -123,7 +124,7 @@ export default function JournalEntryScreen() {
                   <Text className="text-muted dark:text-mutedDark text-sm mb-3">
                     Tu mentor puede analizar esta operación: si seguiste tu plan, cómo influyó tu estado emocional y qué mejorar. Analiza tu proceso, nunca el resultado.
                   </Text>
-                  <Pressable
+                  <PressableScale
                     onPress={() => requestCoach.mutate()}
                     disabled={requestCoach.isPending}
                     className={cn("rounded-xl py-3 items-center", requestCoach.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
@@ -131,7 +132,7 @@ export default function JournalEntryScreen() {
                     <Text className={cn("font-sans-bold", requestCoach.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
                       {requestCoach.isPending ? "Analizando tu operación..." : "🧑‍🏫 Pedir feedback del mentor"}
                     </Text>
-                  </Pressable>
+                  </PressableScale>
                   {requestCoach.isError ? (
                     <Text className="text-negative dark:text-negativeDark text-xs mt-2">No se pudo generar el feedback. Inténtalo de nuevo.</Text>
                   ) : null}
@@ -169,9 +170,9 @@ export default function JournalEntryScreen() {
                       ))}
                     </>
                   ) : null}
-                  <Pressable onPress={startEditing} className="mt-3">
+                  <PressableScale onPress={startEditing} className="mt-3">
                     <Text className="text-primary dark:text-primaryDark text-xs">Editar reflexión</Text>
-                  </Pressable>
+                  </PressableScale>
                 </Card>
               ) : null}
 
@@ -182,9 +183,9 @@ export default function JournalEntryScreen() {
                       ? "La operación está cerrada. ¿Qué pasó comparado con tu plan? Aquí es donde de verdad se aprende."
                       : "Puedes escribir una reflexión en cualquier momento -- por ejemplo, si la tesis cambió desde que compraste."}
                   </Text>
-                  <Pressable onPress={startEditing} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
+                  <PressableScale onPress={startEditing} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
                     <Text className="font-sans-bold text-white">Escribir reflexión</Text>
-                  </Pressable>
+                  </PressableScale>
                 </Card>
               ) : null}
 
@@ -220,7 +221,7 @@ export default function JournalEntryScreen() {
                     className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark min-h-[70px] mb-3"
                     textAlignVertical="top"
                   />
-                  <Pressable
+                  <PressableScale
                     onPress={submit}
                     disabled={reflection.trim().length < 10 || saveReflection.isPending}
                     className={cn("rounded-xl py-3 items-center", reflection.trim().length < 10 || saveReflection.isPending ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
@@ -228,7 +229,7 @@ export default function JournalEntryScreen() {
                     <Text className={cn("font-sans-bold", reflection.trim().length < 10 || saveReflection.isPending ? "text-muted dark:text-mutedDark" : "text-white")}>
                       {saveReflection.isPending ? "Guardando..." : "Guardar reflexión"}
                     </Text>
-                  </Pressable>
+                  </PressableScale>
                 </Card>
               ) : null}
             </>

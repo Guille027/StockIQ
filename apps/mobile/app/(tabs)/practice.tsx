@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import Svg, { Path } from "react-native-svg";
@@ -7,6 +7,7 @@ import { useColorScheme } from "nativewind";
 import { EMOTION_LABELS } from "@stockiq/shared-types";
 import { usePortfolios, useCreatePortfolio, useJournal } from "@/api/hooks";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { cn } from "@/utils/cn";
@@ -26,7 +27,7 @@ export default function PracticeScreen() {
         <View className="flex-row items-center justify-between mt-2 mb-1">
           <Text className="font-display text-2xl text-ink dark:text-inkDark">Práctica</Text>
           <View className="flex-row items-center gap-2">
-            <Pressable onPress={() => router.push("/explore")} hitSlop={8} className="w-9 h-9 rounded-full bg-surface dark:bg-surfaceDark items-center justify-center">
+            <PressableScale onPress={() => router.push("/explore")} hitSlop={8} className="w-9 h-9 rounded-full bg-surface dark:bg-surfaceDark items-center justify-center">
               <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
                 <Path
                   d="M4 17l5-6 4 3 7-9M15 5h5v5"
@@ -36,11 +37,11 @@ export default function PracticeScreen() {
                   strokeLinejoin="round"
                 />
               </Svg>
-            </Pressable>
+            </PressableScale>
             {sub === "carteras" ? (
-              <Pressable onPress={() => setShowForm((v) => !v)} className="bg-primary dark:bg-primaryDark px-3 py-1.5 rounded-full">
+              <PressableScale onPress={() => setShowForm((v) => !v)} className="bg-primary dark:bg-primaryDark px-3 py-1.5 rounded-full">
                 <Text className="font-sans-semibold text-white text-sm">{showForm ? "Cancelar" : "+ Nueva"}</Text>
-              </Pressable>
+              </PressableScale>
             ) : null}
           </View>
         </View>
@@ -49,16 +50,16 @@ export default function PracticeScreen() {
         </Text>
 
         <View className="flex-row gap-2 mb-4">
-          <Pressable className="flex-1" onPress={() => setSub("carteras")}>
+          <PressableScale className="flex-1" onPress={() => setSub("carteras")}>
             <View className={cn("py-2 rounded-xl items-center", sub === "carteras" ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")}>
               <Text className={sub === "carteras" ? "font-sans-semibold text-white text-sm" : "text-muted dark:text-mutedDark text-sm"}>Carteras</Text>
             </View>
-          </Pressable>
-          <Pressable className="flex-1" onPress={() => setSub("diario")}>
+          </PressableScale>
+          <PressableScale className="flex-1" onPress={() => setSub("diario")}>
             <View className={cn("py-2 rounded-xl items-center", sub === "diario" ? "bg-primary dark:bg-primaryDark" : "bg-surface dark:bg-surfaceDark")}>
               <Text className={sub === "diario" ? "font-sans-semibold text-white text-sm" : "text-muted dark:text-mutedDark text-sm"}>Diario</Text>
             </View>
-          </Pressable>
+          </PressableScale>
         </View>
 
         {sub === "carteras" ? <CarterasView showForm={showForm} onCreated={() => setShowForm(false)} /> : <DiarioView />}
@@ -108,9 +109,9 @@ function CarterasView({ showForm, onCreated }: { showForm: boolean; onCreated: (
             placeholderTextColor="#8a8998"
             className="border border-border dark:border-borderDark rounded-xl px-3 py-2.5 text-ink dark:text-inkDark mb-3"
           />
-          <Pressable onPress={submit} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
+          <PressableScale onPress={submit} className="bg-primary dark:bg-primaryDark rounded-xl py-3 items-center">
             <Text className="font-sans-bold text-white">Crear cartera</Text>
-          </Pressable>
+          </PressableScale>
         </Card>
       ) : null}
 
@@ -129,7 +130,7 @@ function CarterasView({ showForm, onCreated }: { showForm: boolean; onCreated: (
       {data ? (
         <View className="gap-2">
           {data.map((p) => (
-            <Pressable key={p.id} onPress={() => router.push(`/portfolio/${p.id}`)}>
+            <PressableScale key={p.id} onPress={() => router.push(`/portfolio/${p.id}`)}>
               <Card className="flex-row items-center justify-between">
                 <View className="flex-1 pr-3">
                   <Text className="font-sans-bold text-ink dark:text-inkDark">{p.name}</Text>
@@ -142,7 +143,7 @@ function CarterasView({ showForm, onCreated }: { showForm: boolean; onCreated: (
                   {(p.totalReturnPct * 100).toFixed(2)}%
                 </Text>
               </Card>
-            </Pressable>
+            </PressableScale>
           ))}
         </View>
       ) : null}
@@ -166,11 +167,11 @@ function DiarioView() {
     <View>
       <View className="flex-row gap-2 mb-3">
         {FILTERS.map((f) => (
-          <Pressable key={f.label} onPress={() => setKind(f.key)}>
+          <PressableScale key={f.label} onPress={() => setKind(f.key)}>
             <View className={cn("px-3.5 py-1.5 rounded-full border", kind === f.key ? "bg-primarySoft dark:bg-primarySoftDark border-primary dark:border-primaryDark" : "border-border dark:border-borderDark")}>
               <Text className={cn("text-xs", kind === f.key ? "text-primary dark:text-primaryDark font-medium" : "text-muted dark:text-mutedDark")}>{f.label}</Text>
             </View>
-          </Pressable>
+          </PressableScale>
         ))}
       </View>
 
@@ -198,7 +199,7 @@ function DiarioView() {
       {data ? (
         <View className="gap-2">
           {data.map((e) => (
-            <Pressable key={e.id} onPress={() => router.push(`/journal/${e.id}`)}>
+            <PressableScale key={e.id} onPress={() => router.push(`/journal/${e.id}`)}>
               <Card>
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center gap-2 flex-1">
@@ -232,7 +233,7 @@ function DiarioView() {
                   {e.reflectedAt ? <Text className="text-positive dark:text-positiveDark text-xs">✓ Reflexionada</Text> : null}
                 </View>
               </Card>
-            </Pressable>
+            </PressableScale>
           ))}
         </View>
       ) : null}

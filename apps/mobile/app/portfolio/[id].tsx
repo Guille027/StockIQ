@@ -1,8 +1,9 @@
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { usePortfolio, usePortfolioOrders, useResetPortfolio, useDeletePortfolio } from "@/api/hooks";
 import { Card } from "@/components/Card";
+import { PressableScale } from "@/components/PressableScale";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { cn } from "@/utils/cn";
@@ -73,16 +74,16 @@ export default function PortfolioDetailScreen() {
             Toda operación empieza con un plan: por qué entras, qué riesgo ves y dónde sales. Sin plan no hay orden.
           </Text>
           <View className="flex-row gap-2">
-            <Pressable className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=buy`)}>
+            <PressableScale className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=buy`)}>
               <View className="bg-primary dark:bg-primaryDark rounded-xl py-3.5 items-center">
                 <Text className="font-sans-bold text-white">Comprar con plan</Text>
               </View>
-            </Pressable>
-            <Pressable className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=sell`)}>
+            </PressableScale>
+            <PressableScale className="flex-1" onPress={() => router.push(`/order/new?portfolioId=${portfolioId}&side=sell`)}>
               <View className="border border-primary dark:border-primaryDark rounded-xl py-3.5 items-center">
                 <Text className="font-sans-bold text-primary dark:text-primaryDark">Vender con plan</Text>
               </View>
-            </Pressable>
+            </PressableScale>
           </View>
 
           <Text className="font-sans-bold text-ink dark:text-inkDark mt-6 mb-2">Posiciones</Text>
@@ -93,7 +94,7 @@ export default function PortfolioDetailScreen() {
           ) : (
             <View className="gap-2">
               {portfolio.positions.map((pos) => (
-                <Pressable key={pos.ticker} onPress={() => router.push(`/company/${pos.ticker}`)}>
+                <PressableScale key={pos.ticker} onPress={() => router.push(`/company/${pos.ticker}`)}>
                   <Card className="flex-row items-center justify-between">
                     <View className="flex-1 pr-3">
                       <Text className="font-sans-bold text-ink dark:text-inkDark">{pos.ticker}</Text>
@@ -108,7 +109,7 @@ export default function PortfolioDetailScreen() {
                       </Text>
                     </View>
                   </Card>
-                </Pressable>
+                </PressableScale>
               ))}
             </View>
           )}
@@ -147,12 +148,12 @@ export default function PortfolioDetailScreen() {
           )}
 
           <View className="flex-row gap-2 mt-6">
-            <Pressable onPress={confirmReset} className="flex-1 border border-border dark:border-borderDark rounded-xl py-3 items-center">
+            <PressableScale onPress={confirmReset} className="flex-1 border border-border dark:border-borderDark rounded-xl py-3 items-center">
               <Text className="font-sans-semibold text-ink dark:text-inkDark">Resetear</Text>
-            </Pressable>
-            <Pressable onPress={confirmDelete} className="flex-1 border border-negative dark:border-negativeDark rounded-xl py-3 items-center">
+            </PressableScale>
+            <PressableScale onPress={confirmDelete} className="flex-1 border border-negative dark:border-negativeDark rounded-xl py-3 items-center">
               <Text className="font-sans-semibold text-negative dark:text-negativeDark">Eliminar</Text>
-            </Pressable>
+            </PressableScale>
           </View>
         </ScrollView>
       ) : null}
