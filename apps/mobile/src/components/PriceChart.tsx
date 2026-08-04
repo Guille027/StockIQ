@@ -15,16 +15,16 @@ export function PriceChart({ bars }: { bars: PriceBar[] }) {
 
   const data = bars.map((b) => ({ timestamp: new Date(b.t).getTime(), value: b.close }));
   const isUp = bars[bars.length - 1]!.close >= bars[0]!.close;
-  const color = isUp ? (colorScheme === "dark" ? "#34D399" : "#16A34A") : colorScheme === "dark" ? "#F87171" : "#DC2626";
+  const color = isUp ? (colorScheme === "dark" ? "#6fae94" : "#3f7d64") : colorScheme === "dark" ? "#c9846a" : "#a85a3f";
 
   return (
     <View>
       <LineChart.Provider data={data}>
         <View className="flex-row items-baseline gap-2 mb-2">
           <LineChart.PriceText
-            style={{ fontSize: 28, fontWeight: "700", color: colorScheme === "dark" ? "#F1F5F9" : "#0F172A" }}
+            style={{ fontFamily: "JetBrainsMono_600SemiBold", fontSize: 28, color: colorScheme === "dark" ? "#f2f1f6" : "#1a1a22" }}
           />
-          <LineChart.DatetimeText style={{ fontSize: 12, color: colorScheme === "dark" ? "#8B93A7" : "#6B7280" }} />
+          <LineChart.DatetimeText style={{ fontFamily: "JetBrainsMono_500Medium", fontSize: 12, color: colorScheme === "dark" ? "#8a8998" : "#6b6a72" }} />
         </View>
         <LineChart height={200}>
           <LineChart.Path color={color} width={2} />

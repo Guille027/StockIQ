@@ -1,20 +1,22 @@
-import { useFonts, PlusJakartaSans_800ExtraBold } from "@expo-google-fonts/plus-jakarta-sans";
-import { Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from "@expo-google-fonts/manrope";
-import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono";
+import { useFonts, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk";
+import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
+import { JetBrainsMono_500Medium, JetBrainsMono_600SemiBold, JetBrainsMono_700Bold } from "@expo-google-fonts/jetbrains-mono";
 
 /**
- * Three typefaces, three jobs (see docs/design-system): Jakarta for
- * headlines, Manrope for everything read as prose, Plex Mono reserved
- * exclusively for numbers (prices, XP, %, scores). Loaded once at the root
- * layout, gating render the same way the color-scheme sync already does.
+ * Three typefaces, three jobs (see the StockIQ Claude Design project):
+ * Space Grotesk for headlines, Inter for everything read as prose, JetBrains
+ * Mono reserved exclusively for numbers (prices, XP, %, scores). Loaded once
+ * at the root layout, gating render the same way the color-scheme sync does.
  */
 export function useAppFonts() {
   return useFonts({
-    PlusJakartaSans_800ExtraBold,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    IBMPlexMono_500Medium,
-    IBMPlexMono_600SemiBold,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_600SemiBold,
+    JetBrainsMono_700Bold,
   });
 }

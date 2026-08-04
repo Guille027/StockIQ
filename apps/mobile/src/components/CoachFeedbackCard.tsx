@@ -1,7 +1,8 @@
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { router } from "expo-router";
 import type { CoachFeedbackDto } from "@stockiq/shared-types";
 import { Card } from "./Card";
+import { PressableScale } from "@/components/PressableScale";
 
 /** Renders the mentor's feedback -- shared by journal detail and profile review. */
 export function CoachFeedbackCard({ feedback }: { feedback: CoachFeedbackDto }) {
@@ -45,11 +46,11 @@ export function CoachFeedbackCard({ feedback }: { feedback: CoachFeedbackDto }) 
       {feedback.suggestedLessonIds.length > 0 ? (
         <View className="flex-row flex-wrap gap-2 mt-3">
           {feedback.suggestedLessonIds.map((id) => (
-            <Pressable key={id} onPress={() => router.push(`/lesson/${id}`)}>
+            <PressableScale key={id} onPress={() => router.push(`/lesson/${id}`)}>
               <View className="bg-primarySoft dark:bg-primarySoftDark px-3 py-1.5 rounded-full">
                 <Text className="font-sans-semibold text-primary dark:text-primaryDark text-xs">📘 Repasar {id}</Text>
               </View>
-            </Pressable>
+            </PressableScale>
           ))}
         </View>
       ) : null}

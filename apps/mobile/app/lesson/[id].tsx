@@ -1,9 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeInRight,
+  FadeOutLeft,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import type { LessonAnswers, LessonBlock } from "@stockiq/shared-types";
 import { useCompleteLesson, useLesson } from "@/api/hooks";
 import { Card } from "@/components/Card";
@@ -11,6 +21,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { CandleExample, LineExample } from "@/components/CandleExample";
 import { Confetti } from "@/components/Confetti";
+import { PressableScale } from "@/components/PressableScale";
 import { cn } from "@/utils/cn";
 
 /**
@@ -86,9 +97,9 @@ export default function LessonScreen() {
       {lesson && !finished ? (
         <View className="flex-1 px-4">
           <View className="flex-row items-center gap-3 mt-2">
-            <Pressable onPress={exitLesson} hitSlop={10}>
+            <PressableScale onPress={exitLesson} hitSlop={10}>
               <Text className="text-muted dark:text-mutedDark text-xl">✕</Text>
-            </Pressable>
+            </PressableScale>
             <View className="flex-1 h-2.5 bg-surface dark:bg-surfaceDark rounded-full overflow-hidden">
               <Animated.View className="h-2.5 bg-primary dark:bg-primaryDark rounded-full" style={progressStyle} />
             </View>
@@ -98,7 +109,11 @@ export default function LessonScreen() {
           </View>
 
           <ScrollView className="flex-1 mt-4" contentContainerStyle={{ paddingBottom: 16 }}>
-            {block ? <Block block={block} picked={picked} onAnswer={answer} /> : null}
+            {block ? (
+              <Animated.View key={blockIndex} entering={FadeInRight.duration(260)} exiting={FadeOutLeft.duration(160)}>
+                <Block block={block} picked={picked} onAnswer={answer} />
+              </Animated.View>
+            ) : null}
           </ScrollView>
 
           <ContinueButton
@@ -118,16 +133,21 @@ export default function LessonScreen() {
 
 function ResultScreen({ scorePct, xpAwarded }: { scorePct: number; xpAwarded: number }) {
   const badgeScale = useSharedValue(0.4);
+  const xpScale = useSharedValue(0);
   const perfect = scorePct === 100;
 
   useEffect(() => {
     badgeScale.value = withSpring(1, { damping: 9, stiffness: 160 });
+    if (xpAwarded > 0) xpScale.value = withDelay(280, withSpring(1, { damping: 10, stiffness: 180 }));
+    if (xpAwarded > 0) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const badgeStyle = useAnimatedStyle(() => ({ transform: [{ scale: badgeScale.value }] }));
+  const xpStyle = useAnimatedStyle(() => ({ transform: [{ scale: xpScale.value }], opacity: xpScale.value }));
 
   return (
-    <View className="flex-1 px-4 items-center justify-center">
-      {scorePct >= 60 ? <Confetti trigger={1} /> : null}
+    <Animated.View entering={FadeIn.duration(300)} className="flex-1 px-4 items-center justify-center">
+      {xpAwarded > 0 ? <Confetti trigger={1} /> : null}
       <Animated.Text style={[badgeStyle, { fontSize: 52, marginBottom: 16 }]}>
         {perfect ? "🏆" : scorePct >= 60 ? "🎉" : "💪"}
       </Animated.Text>
@@ -140,14 +160,14 @@ function ResultScreen({ scorePct, xpAwarded }: { scorePct: number; xpAwarded: nu
             : "No pasa nada: los errores son parte del aprendizaje. Repítela cuando quieras."}
       </Text>
       {xpAwarded > 0 ? (
-        <View className="bg-accentSoft dark:bg-accentSoftDark px-4 py-2 rounded-full mt-4">
+        <Animated.View style={xpStyle} className="bg-accentSoft dark:bg-accentSoftDark px-4 py-2 rounded-full mt-4">
           <Text className="font-mono-bold text-accent dark:text-accentDark">+{xpAwarded} XP</Text>
-        </View>
+        </Animated.View>
       ) : null}
-      <Pressable className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={exitLesson}>
+      <PressableScale className="bg-primary dark:bg-primaryDark rounded-xl px-8 py-3.5 mt-8" onPress={exitLesson}>
         <Text className="font-sans-bold text-white">Continuar</Text>
-      </Pressable>
-    </View>
+      </PressableScale>
+    </Animated.View>
   );
 }
 
@@ -208,7 +228,7 @@ function Block({
               const isPicked = picked === i;
               const isCorrect = i === block.correctIndex;
               return (
-                <Pressable key={i} onPress={() => onAnswer(i)} disabled={answered}>
+                <PressableScale key={i} onPress={() => onAnswer(i)} disabled={answered}>
                   <Card
                     className={cn(
                       answered && isCorrect && "border-positive dark:border-positiveDark bg-positiveSoft dark:bg-positiveSoftDark",
@@ -217,7 +237,7 @@ function Block({
                   >
                     <Text className="text-ink dark:text-inkDark text-sm">{opt}</Text>
                   </Card>
-                </Pressable>
+                </PressableScale>
               );
             })}
           </View>
@@ -235,7 +255,7 @@ function Block({
               const isPicked = picked === v;
               const isCorrect = v === block.answer;
               return (
-                <Pressable key={String(v)} className="flex-1" onPress={() => onAnswer(v)} disabled={answered}>
+                <PressableScale key={String(v)} className="flex-1" onPress={() => onAnswer(v)} disabled={answered}>
                   <Card
                     className={cn(
                       "items-center py-4",
@@ -245,7 +265,7 @@ function Block({
                   >
                     <Text className="font-sans-bold text-ink dark:text-inkDark">{v ? "Verdadero" : "Falso"}</Text>
                   </Card>
-                </Pressable>
+                </PressableScale>
               );
             })}
           </View>
@@ -306,7 +326,7 @@ function ContinueButton({
   const needsAnswer = block?.type === "quiz" || block?.type === "trueFalse";
   const disabled = busy || (needsAnswer && picked === undefined);
   return (
-    <Pressable
+    <PressableScale
       className={cn("rounded-xl py-3.5 items-center mb-4", disabled ? "bg-surface dark:bg-surfaceDark" : "bg-primary dark:bg-primaryDark")}
       disabled={disabled}
       onPress={onPress}
@@ -314,6 +334,6 @@ function ContinueButton({
       <Text className={cn("font-sans-bold", disabled ? "text-muted dark:text-mutedDark" : "text-white")}>
         {busy ? "Corrigiendo..." : isLast ? "Terminar" : "Continuar"}
       </Text>
-    </Pressable>
+    </PressableScale>
   );
 }

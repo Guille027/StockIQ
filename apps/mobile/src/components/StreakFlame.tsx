@@ -8,7 +8,7 @@ import { useColorScheme } from "nativewind";
  * so the counter feels alive even when nothing else is happening. It never
  * goes fully static -- stillness would read as "the streak stopped mattering".
  */
-export function StreakFlame({ size = 20 }: { size?: number }) {
+export function StreakFlame({ size = 20, color: colorOverride }: { size?: number; color?: string }) {
   const { colorScheme } = useColorScheme();
   const scale = useSharedValue(1);
 
@@ -24,7 +24,7 @@ export function StreakFlame({ size = 20 }: { size?: number }) {
   }, []);
 
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }, { rotate: "-1deg" }] }));
-  const color = colorScheme === "dark" ? "#F5B03D" : "#E0930A";
+  const color = colorOverride ?? (colorScheme === "dark" ? "#E8C77A" : "#B9822F");
 
   return (
     <Animated.View style={style}>

@@ -1,118 +1,249 @@
-import { ScrollView, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import type { RoadmapLesson, RoadmapLevel } from "@stockiq/shared-types";
 import { useProfile, useRoadmap } from "@/api/hooks";
 import { Card } from "@/components/Card";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
-import { LessonIcon } from "@/components/LessonIcon";
 import { StreakFlame } from "@/components/StreakFlame";
-import { PressableScale } from "@/components/PressableScale";
-import { cn } from "@/utils/cn";
+import { LEVEL_ACCENTS, LessonPathNode, type LessonNodeAlign, type LessonNodeStatus, type LevelAccent } from "@/components/LessonPathNode";
+
+interface PathRow {
+  levelId: string;
+  levelOrder: number;
+  levelTitle: string;
+  lessonId: string;
+  title: string;
+  sub: string;
+  status: LessonNodeStatus;
+  align: LessonNodeAlign;
+  accent: LevelAccent;
+}
+
+interface Group {
+  levelId: string;
+  levelOrder: number;
+  levelTitle: string;
+  accent: LevelAccent;
+  rows: PathRow[];
+}
+
+const ALIGNS: LessonNodeAlign[] = ["flex-start", "center", "flex-end"];
+/** How far a section's top can be above the viewport top before it stops
+ * counting as "in view" -- keeps the header from flipping a beat too late. */
+const SCROLL_TRIGGER_OFFSET = 32;
 
 /** Aprender: the Duolingo-style level path. This is the app's identity now. */
 export default function LearnScreen() {
   const { data, isLoading, isError, refetch } = useRoadmap();
   const { data: profile } = useProfile();
 
+  const { rows, currentLevelId } = useMemo(() => buildPath(data?.levels ?? []), [data]);
+  const groups = useMemo(() => groupByLevel(rows), [rows]);
+
+  const scrollRef = useRef<ScrollView>(null);
+  const offsetsRef = useRef<Record<string, number>>({});
+  const scrolledToStart = useRef(false);
+  const [activeGroupId, setActiveGroupId] = useState<string | undefined>(currentLevelId);
+
+  useEffect(() => {
+    scrolledToStart.current = false;
+    setActiveGroupId(currentLevelId);
+  }, [currentLevelId]);
+
+  const active = groups.find((g) => g.levelId === activeGroupId) ?? groups[0];
+
+  const tryScrollToCurrent = () => {
+    if (scrolledToStart.current || !currentLevelId) return;
+    const top = offsetsRef.current[currentLevelId];
+    if (top === undefined) return;
+    scrolledToStart.current = true;
+    if (top > 40) scrollRef.current?.scrollTo({ y: top - 24, animated: false });
+  };
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    let candidate = groups[0]?.levelId;
+    for (const g of groups) {
+      const top = offsetsRef.current[g.levelId];
+      if (top !== undefined && y + SCROLL_TRIGGER_OFFSET >= top) candidate = g.levelId;
+    }
+    if (candidate && candidate !== activeGroupId) setActiveGroupId(candidate);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-backgroundDark" edges={["top"]}>
       {isLoading ? <LoadingState label="Cargando tu camino..." /> : null}
       {isError ? <ErrorState message="No se pudo conectar con el servidor. Revisa que la API esté corriendo." onRetry={() => refetch()} /> : null}
 
-      {data ? (
-        <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
-          <View className="flex-row items-center justify-between mt-2">
-            <Text className="font-display text-2xl text-ink dark:text-inkDark">Aprender</Text>
-            {profile ? (
-              <View className="flex-row items-center gap-2">
-                {profile.currentStreak > 0 ? (
-                  <View className="flex-row items-center gap-1.5 bg-accentSoft dark:bg-accentSoftDark px-2.5 py-1 rounded-full">
-                    <StreakFlame size={14} />
-                    <Text className="font-mono-bold text-accent dark:text-accentDark text-xs">{profile.currentStreak}</Text>
-                  </View>
-                ) : null}
-                <View className="bg-primarySoft dark:bg-primarySoftDark px-2.5 py-1 rounded-full">
-                  <Text className="font-mono-bold text-primary dark:text-primaryDark text-xs">{profile.xpTotal} XP</Text>
-                </View>
-              </View>
-            ) : null}
-          </View>
-          <Text className="text-muted dark:text-mutedDark text-sm mt-1 mb-4">
-            Paso a paso, hasta analizar empresas por tu cuenta. Sin atajos, sin señales.
-          </Text>
+      {data && active ? (
+        <>
+          {/* Pinned above the scroll content, not part of it -- like Duolingo's
+              unit banner, it reads whatever level section is currently in
+              view rather than a fixed snapshot of overall progress. */}
+          <RoadmapHeader accent={active.accent} levelOrder={active.levelOrder} topic={active.levelTitle} profile={profile} />
 
-          {data.levels.map((level) => (
-            <LevelSection key={level.id} level={level} />
-          ))}
-        </ScrollView>
+          <ScrollView
+            ref={scrollRef}
+            onScroll={handleScroll}
+            scrollEventThrottle={32}
+            contentContainerStyle={{ paddingBottom: 40 }}
+          >
+            <View className="px-5 pt-5">
+              {groups.map((group) => (
+                <View
+                  key={group.levelId}
+                  className="mb-6"
+                  onLayout={(e) => {
+                    offsetsRef.current[group.levelId] = e.nativeEvent.layout.y;
+                    tryScrollToCurrent();
+                  }}
+                >
+                  <View className="flex-row items-center gap-2 mb-4">
+                    <View className="rounded-md px-1.5 py-0.5" style={{ backgroundColor: group.accent.mid }}>
+                      <Text className="font-mono-bold text-[11px]" style={{ color: "#101019" }}>
+                        N{group.levelOrder}
+                      </Text>
+                    </View>
+                    <Text className="font-display-semibold text-[16px] text-ink dark:text-inkDark">{group.levelTitle}</Text>
+                  </View>
+
+                  {group.rows.length === 0 ? (
+                    <Card className="opacity-60">
+                      <Text className="text-muted dark:text-mutedDark text-sm">Próximamente</Text>
+                    </Card>
+                  ) : (
+                    group.rows.map((row, i) => (
+                      <LessonPathNode
+                        key={row.lessonId}
+                        index={i}
+                        status={row.status}
+                        accent={row.accent}
+                        title={row.title}
+                        sub={row.sub}
+                        align={row.align}
+                        onPress={() => {
+                          if (row.status !== "locked") router.push(`/lesson/${row.lessonId}`);
+                        }}
+                      />
+                    ))
+                  )}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </>
       ) : null}
     </SafeAreaView>
   );
 }
 
-function LevelSection({ level }: { level: RoadmapLevel }) {
-  const locked = level.status === "locked";
-  const hasLessons = level.lessons.length > 0;
-
+function RoadmapHeader({
+  accent,
+  levelOrder,
+  topic,
+  profile,
+}: {
+  accent: LevelAccent;
+  levelOrder: number;
+  topic: string;
+  profile: { currentStreak: number; xpTotal: number } | undefined;
+}) {
   return (
-    <View className="mb-5">
-      <View className="flex-row items-center gap-2 mb-2">
-        <Text className={cn("text-xl", locked && "opacity-40")}>{level.icon}</Text>
-        <View className="flex-1">
-          <Text className={cn("font-sans-bold text-ink dark:text-inkDark text-[15px]", locked && "opacity-40")}>
-            Nivel {level.order} · {level.title}
-          </Text>
-        </View>
-        {level.status === "completed" ? (
-          <Text className="font-sans-bold text-positive dark:text-positiveDark text-xs">✓ Completado</Text>
-        ) : null}
-        {locked ? (
-          <View className="w-5 h-5 items-center justify-center opacity-50">
-            <Text style={{ fontSize: 13 }}>🔒</Text>
-          </View>
-        ) : null}
-      </View>
-      <Text className={cn("text-muted dark:text-mutedDark text-xs mb-2", locked && "opacity-60")}>{level.description}</Text>
+    <View style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24, overflow: "hidden" }}>
+      {/* Crossfading gradient stack: the outgoing level's colors fade out
+          while the incoming ones fade in, so the banner "morphs" between
+          levels instead of snapping. */}
+      <Animated.View key={levelOrder} entering={FadeIn.duration(320)} exiting={FadeOut.duration(320)} style={{ position: "absolute", inset: 0 }}>
+        <LinearGradient colors={[accent.light, accent.mid]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
+      </Animated.View>
 
-      {locked || !hasLessons ? (
-        <Card className="opacity-60">
-          <Text className="text-muted dark:text-mutedDark text-sm">
-            {hasLessons || locked ? (locked && hasLessons ? "Completa el nivel anterior para desbloquear." : "Próximamente") : "Próximamente"}
-          </Text>
-        </Card>
-      ) : (
-        <View className="gap-2">
-          {level.lessons.map((lesson) => (
-            <LessonRow key={lesson.id} lesson={lesson} />
-          ))}
+      <View style={{ paddingTop: 18, paddingHorizontal: 20, paddingBottom: 20 }}>
+        <View className="flex-row items-center justify-between mb-3.5">
+          {profile ? (
+            <View className="flex-row items-center gap-1" style={{ backgroundColor: "rgba(16,16,25,0.16)", borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10 }}>
+              <StreakFlame size={13} color={accent.shadow} />
+              <Text className="font-mono-bold text-[13px]" style={{ color: accent.shadow }}>
+                {profile.currentStreak}
+              </Text>
+            </View>
+          ) : (
+            <View />
+          )}
+          {profile ? (
+            <View style={{ backgroundColor: "rgba(16,16,25,0.16)", borderRadius: 999, paddingVertical: 5, paddingHorizontal: 12 }}>
+              <Text className="font-mono-bold text-[13px]" style={{ color: accent.shadow }}>
+                {profile.xpTotal} XP
+              </Text>
+            </View>
+          ) : null}
         </View>
-      )}
+
+        <Animated.View key={`text-${levelOrder}`} entering={FadeIn.duration(260).delay(60)} exiting={FadeOut.duration(160)}>
+          <Text className="font-mono-bold text-[11px] tracking-wide uppercase mb-1" style={{ color: accent.shadow, opacity: 0.75 }}>
+            Nivel {levelOrder}
+          </Text>
+          <Text className="font-display text-2xl" style={{ color: accent.shadow }}>
+            {topic}
+          </Text>
+        </Animated.View>
+      </View>
     </View>
   );
 }
 
-function LessonRow({ lesson }: { lesson: RoadmapLesson }) {
-  const done = lesson.status === "completed";
-  return (
-    <PressableScale onPress={() => router.push(`/lesson/${lesson.id}`)}>
-      <Card className="flex-row items-center gap-3">
-        <LessonIcon status={done ? "completed" : "available"} />
-        <View className="flex-1">
-          <Text className="font-sans-bold text-ink dark:text-inkDark text-[14.5px]">{lesson.title}</Text>
-          <Text className="text-muted dark:text-mutedDark text-xs mt-0.5" numberOfLines={1}>
-            {done && lesson.bestScorePct !== undefined ? (
-              <>
-                Mejor puntuación: <Text className="font-mono text-muted dark:text-mutedDark text-xs">{Math.round(lesson.bestScorePct)}%</Text>
-              </>
-            ) : (
-              `${lesson.estimatedMinutes} min · ${lesson.description}`
-            )}
-          </Text>
-        </View>
-        <Text className="text-muted dark:text-mutedDark">›</Text>
-      </Card>
-    </PressableScale>
-  );
+function groupByLevel(rows: PathRow[]): Group[] {
+  const groups = new Map<string, Group>();
+  for (const row of rows) {
+    if (!groups.has(row.levelId)) {
+      groups.set(row.levelId, { levelId: row.levelId, levelOrder: row.levelOrder, levelTitle: row.levelTitle, accent: row.accent, rows: [] });
+    }
+    groups.get(row.levelId)!.rows.push(row);
+  }
+  return [...groups.values()];
+}
+
+function buildPath(levels: RoadmapLevel[]) {
+  const rows: PathRow[] = [];
+  let li = 0;
+  let foundCurrent = false;
+  let currentLevelId: string | undefined;
+  let firstLevelId: string | undefined;
+
+  for (const level of levels) {
+    const accent = LEVEL_ACCENTS[level.order % LEVEL_ACCENTS.length];
+    if (!firstLevelId) firstLevelId = level.id;
+
+    for (const lesson of level.lessons as RoadmapLesson[]) {
+      const align = ALIGNS[li % 3];
+      li++;
+
+      let status: LessonNodeStatus;
+      if (lesson.status === "completed") status = "done";
+      else if (level.status === "locked") status = "locked";
+      else if (!foundCurrent) {
+        status = "current";
+        foundCurrent = true;
+        currentLevelId = level.id;
+      } else status = "available";
+
+      rows.push({
+        levelId: level.id,
+        levelOrder: level.order,
+        levelTitle: level.title,
+        lessonId: lesson.id,
+        title: lesson.title,
+        sub: status === "done" && lesson.bestScorePct !== undefined ? `${Math.round(lesson.bestScorePct)}%` : `${lesson.estimatedMinutes} min`,
+        status,
+        align,
+        accent,
+      });
+    }
+  }
+
+  return { rows, currentLevelId: currentLevelId ?? firstLevelId };
 }

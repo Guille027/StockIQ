@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { PressableScale } from "@/components/PressableScale";
 
 interface SectionHeaderProps {
   title: string;
@@ -10,9 +11,9 @@ export function SectionHeader({ title, action }: SectionHeaderProps) {
     <View className="flex-row items-center justify-between mb-3 mt-6">
       <Text className="font-display text-ink dark:text-inkDark text-lg">{title}</Text>
       {action ? (
-        <Pressable onPress={action.onPress} hitSlop={8}>
+        <PressableScale onPress={action.onPress} hitSlop={8}>
           <Text className="font-sans-semibold text-primary dark:text-primaryDark text-sm">{action.label}</Text>
-        </Pressable>
+        </PressableScale>
       ) : null}
     </View>
   );
